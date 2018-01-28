@@ -147,6 +147,9 @@ def t_error(t):
 
 lexer = lex.lex()
 
+Toks={}
+for a in tokens:
+    Toks[a]=[a,0]
 
 # Scanning the file name
 if (len(sys.argv) == 1):
@@ -165,7 +168,24 @@ try:
             tok = lexer.token()
             if not tok:
                 break
-            print(tok)
+            Toks[tok.type][1]=Toks[tok.type][1]+1
+            if tok.value in Toks[tok.type]:
+                continue
+            Toks[tok.type].append(tok.value)
+            # print(tok)
+
+        print "TOKEN\t\t\tOCCURANCES\t\tLEXEMES"
+        print "-"*64
+        for i in Toks:
+            if Toks[i][1]==0:
+                continue
+            if len(Toks[i][0]) <= 6:
+                print Toks[i][0], "\t\t\t", Toks[i][1], "\t\t\t", Toks[i][2]
+            else:
+                print Toks[i][0], "\t\t", Toks[i][1], "\t\t\t", Toks[i][2]
+            for x in range(3, len(Toks[i])):
+                print "\t\t\t\t\t\t", Toks[i][x]
+            print "\n"
 
 except IOError as e:
     print "I/O error({0}): " + "We are not able to open " + file_name + " . Does it Exists? Check permissionsi!"
