@@ -185,7 +185,7 @@ try:
                 print Toks[i][0], "\t\t", Toks[i][1], "\t\t\t", Toks[i][2]
             for x in range(3, len(Toks[i])):
                 print "\t\t\t\t\t\t", Toks[i][x]
-            print "\n"
+            #print "\n"
 
 except IOError as e:
-    print "I/O error({0}): " + "We are not able to open " + file_name + " . Does it Exists? Check permissionsi!"
+    print "I/O error({0}): " + "Cannot open file " + file_name + " . Does it Exists? Check permissionsi!"
