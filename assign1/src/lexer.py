@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 import ply.lex as lex
 import re
