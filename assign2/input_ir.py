@@ -17,7 +17,7 @@ def dutta_input():
     toRet = []
 
     for x in lines:
-        appendList = x.split(",")
+        appendList = x.strip().split(",")
         toRet.append(appendList)
 
     return toRet
