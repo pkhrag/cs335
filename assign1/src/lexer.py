@@ -189,4 +189,4 @@ try:
                 print "\t\t\t\t\t\t", Toks[i][x]
 
 except IOError as e:
-    print "I/O error({0}): " + "We are not able to open " + file_name + " . Does it Exists? Check permissionsi!"
+    print "I/O error({0}): " + "Cannot open file " + file_name + " . Does it Exists? Check permissionsi!"
