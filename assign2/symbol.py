@@ -1,7 +1,9 @@
 
 class symbolTable:
+    
     def __init__(self):
         self.table = {}
+        self.globalSymbolList = []
 
     # Checks whether "name" lies in the symbol table
     def lookUp(self, name):
@@ -11,6 +13,7 @@ class symbolTable:
     def insert(self, name, typeOf):
         if (not self.lookUp(name)):
             (self.table)[name] = {}
+            self.globalSymbolList.append(name)
             (self.table)[name]["type"] = typeOf
 
     # Returns the argument list of the variable else returns None
@@ -27,3 +30,5 @@ class symbolTable:
             (self.table)[name][key] = value
         else:
             print ("Key Error Symbol name doesn't exists - Cant Update")
+
+
