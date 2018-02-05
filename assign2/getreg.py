@@ -1,39 +1,21 @@
-regDes = {
-    'esp': None,
-    'ebp': None,
-    'eax': None,
-    'ebx': None,
-    'ecx': None,
-    'edx': None,
-    'esi': None,
-    'edi': None,
-    'r8D': None,
-    'r9D': None,
-    'r10D': None,
-    'r11D': None,
-    'r12D': None,
-    'r13D': None,
-    'r14D': None,
-    'r15D': None
-}
-
-addrDes = {}
+from config import *
 
 
-def generateInstr():
-    pass
+# Initializes addrDes
+def createAddrDesc():
+    table = ST.globalSymbolList
 
-
-def createAddrDesc(ST):
-    table = ST.getTable()
-
-    for symbol in table.iterkeys():
-        print symbol
-        if symbol['type'] == 'int':
+    for symbol in table:
+        if ST.table[symbol]['type'] != 'void':
             addrDes[symbol] = {"register": None, "memory": None}
 
-    print addrDes
+# finds and returns an empty register. returns None if not exist.
+def emptyReg():
+    for key, value in regDes.iteritems():
+        if key != 'esp' and key != 'ebp':
+            if value == None:
+                return key
+    return None
 
-
-def getreg(instr):
+def getreg(instr, nextUseTable):
     pass

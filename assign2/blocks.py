@@ -1,8 +1,9 @@
+from config import *
 # Returns a list of tuples containing starting and ending index of basic blocks.
 # Takes instruction lists as input
 
 
-def findBlocks(ir):
+def findBlocks():
     bbl = []
     start = 0
 

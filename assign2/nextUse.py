@@ -1,4 +1,7 @@
-def nextUseTable(x, ST, ir, type_1, type_2, type_3, type_4):
+from config import *
+
+
+def nextUseTable(x):
 
     start = x[0]
     end = x[1]

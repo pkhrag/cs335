@@ -4,24 +4,9 @@ import symbol
 import nextUse
 import init_symbols
 import getreg
+from config import *
 
 
-# Corresponds to 4 operand instructions
-type_4 = ['+', '-', 'x', '/', '%', '&', '|', '^', '<<', '>>', '==', '<', '>', '!=', '<=', '>=']
-
-# Corresponds to 3 operand instructions
-type_3 = ['=', '!', '+=', '-=', 'x=', '/=', '%=', '&=',
-          '|=', '^=', '<<=', '>>=', '*', 'ifgoto', 'callint']
-
-# Corresponds to 2 operand instructions
-type_2 = ['++', '--', 'label', 'print', 'scan', 'callvoid', 'goto', 'retint']
-
-type_1 = ['retvoid']
-
-instr_types = type_4 + type_3 + type_2 + type_1
-
-# Symbol Table object
-ST = symbol.symbolTable()
 
 # Creates IR table
 
@@ -77,57 +62,17 @@ class instruction3AC:
 # Use input function made by dutta
 raw_ir = input_ir.dutta_input()
 
-ir = []
-
 for i in raw_ir:
     ir.append(instruction3AC(i))
 
-bbl = blocks.findBlocks(ir)
+bbl = blocks.findBlocks()
 
 print bbl
 
-retVal = nextUse.nextUseTable(bbl[1], ST, ir, type_1, type_2, type_3, type_4)
+retVal = nextUse.nextUseTable(bbl[1])
 for key, value in retVal.iteritems():
     print key, value
 
 
-regDes = {
-    'esp': None,
-    'ebp': None,
-    'eax': None,
-    'ebx': None,
-    'ecx': None,
-    'edx': None,
-    'esi': None,
-    'edi': None,
-    'r8D': None,
-    'r9D': None,
-    'r10D': None,
-    'r11D': None,
-    'r12D': None,
-    'r13D': None,
-    'r14D': None,
-    'r15D': None
-}
-
-addrDes = {}
-
-machineCode = []
-
-# for block in bbl:
-#     currNextUse = nextUse.nextUseTable(block, ir, type_1, type_2, type_3, type_4)
-#     start, end = block
-#     for insnum in range(start, end+1):
-#         currIns = ir[insnum]
-#         if currIns.type == 'retvoid':
-#             machineCode.append('ret')
-#         elif currIns.type == 'retint':
-#
-# .
-# .
-# .
-#
-
-
-init_symbols.initializeGlobals(ST)
-getreg.createAddrDesc(ST)
+init_symbols.initializeGlobals()
+getreg.createAddrDesc()

@@ -1,6 +1,7 @@
+from config import *
 
 
-def initializeGlobals(ST):
+def initializeGlobals():
 
 	symbolList = ST.globalSymbolList
 	with open('output.asm','w') as f:
