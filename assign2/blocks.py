@@ -8,7 +8,7 @@ def findBlocks(ir):
 
     for index, instr in enumerate(ir):
         # End of current basic block
-        if instr.type == 'goto' or instr.type == 'ifgoto' or instr.type == 'call' or instr.type == 'ret':
+        if instr.type == 'goto' or instr.type == 'ifgoto' or instr.type == 'callint' or instr.type == 'callvoid' or instr.type == 'ret' or instr.type == 'print' or instr.type == 'scan':
             bbl.append((start, index))
             start = index + 1
         # Starting new basic block
