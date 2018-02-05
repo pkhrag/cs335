@@ -5,4 +5,7 @@ def initializeGlobals(ST):
 	symbolList = ST.globalSymbolList
 	with open('output.asm','w') as f:
 		f.write('section     .data\n\n')
-		f.write('heyaa')
+		for x in symbolList:
+			if ST.table[x]["type"] == "int":
+				f.write(x+"     dw"+"     0\n")
+
