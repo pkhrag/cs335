@@ -2,6 +2,7 @@ import input_ir
 import blocks
 import symbol
 import nextUse
+import init_symbols
 
 
 # Corresponds to 4 operand instructions
@@ -125,3 +126,6 @@ machineCode = []
 # .
 # .
 #
+
+
+init_symbols.initializeGlobals(ST)
