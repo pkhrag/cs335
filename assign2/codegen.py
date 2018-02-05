@@ -3,6 +3,7 @@ import blocks
 import symbol
 import nextUse
 import init_symbols
+import getreg
 
 
 # Corresponds to 4 operand instructions
@@ -129,3 +130,4 @@ machineCode = []
 
 
 init_symbols.initializeGlobals(ST)
+getreg.createAddrDesc(ST)
