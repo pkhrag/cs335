@@ -1,19 +1,20 @@
 import input_ir
 import blocks
 import symbol
+import nextUse
 
 
 # Corresponds to 4 operand instructions
 type_4 = ['+', '-', 'x', '/', '%', '&', '|', '^', '<<', '>>', '==', '<', '>', '!=', '<=', '>=']
 
 # Corresponds to 3 operand instructions
-type_3 = ['=', '!', '+=', '-=', 'x=', '/=', '%=', '&=', '|=', '^=', '<<=', '>>=', '*', 'ifgoto']
+type_3 = ['=', '!', '+=', '-=', 'x=', '/=', '%=', '&=',
+          '|=', '^=', '<<=', '>>=', '*', 'ifgoto', 'callint']
 
 # Corresponds to 2 operand instructions
-type_2 = ['++', '--', 'label', 'print', 'scan', 'call', 'goto']
+type_2 = ['++', '--', 'label', 'print', 'scan', 'callvoid', 'goto', 'retint']
 
-# Corresponds to 1 operand instructions
-type_1 = ['ret']
+type_1 = ['retvoid']
 
 instr_types = type_4 + type_3 + type_2 + type_1
 
@@ -49,6 +50,7 @@ class instruction3AC:
                                  ', '.join(i for i in instr))
             self.dst = instr[2]
 
+            # callint var_name function_name
             if (self.type != 'ifgoto'):
                 ST.insert(self.dst, "int")
 
@@ -64,6 +66,11 @@ class instruction3AC:
             if (self.type == 'label'):
                 ST.insert(self.dst, "void")
 
+        else:
+            if len(instr) != 2:
+                raise ValueError('Inappropriate number of operands in ' +
+                                 ', '.join(i for i in instr))
+
 
 # Use input function made by dutta
 raw_ir = input_ir.dutta_input()
@@ -75,6 +82,45 @@ for i in raw_ir:
 
 bbl = blocks.findBlocks(ir)
 
-print ir
 print bbl
-print ST.table
+
+retVal = nextUse.nextUseTable(bbl[1], ST, ir, type_1, type_2, type_3, type_4)
+for key, value in retVal.iteritems():
+    print key, value
+
+
+regDes = {
+    'esp': None,
+    'ebp': None,
+    'eax': None,
+    'ebx': None,
+    'ecx': None,
+    'edx': None,
+    'esi': None,
+    'edi': None,
+    'r8D': None,
+    'r9D': None,
+    'r10D': None,
+    'r11D': None,
+    'r12D': None,
+    'r13D': None,
+    'r14D': None,
+    'r15D': None
+}
+
+addrDes = {}
+
+machineCode = []
+
+# for block in bbl:
+#     currNextUse = nextUse.nextUseTable(block, ir, type_1, type_2, type_3, type_4)
+#     start, end = block
+#     for insnum in range(start, end+1):
+#         currIns = ir[insnum]
+#         if currIns.type == 'retvoid':
+#             machineCode.append('ret')
+#         elif currIns.type == 'retint':
+#             
+# .
+# .
+# .
