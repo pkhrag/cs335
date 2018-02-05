@@ -8,21 +8,20 @@ def nextUseTable(x, ST, ir, type_1, type_2, type_3, type_4):
         tableToRet[i] = {}
 
     listOfSymbols = set([])
-    for i in range (start, end+1):
-        
-        if ir[i].type in type_4: 
+    for i in range(start, end + 1):
+
+        if ir[i].type in type_4:
             listOfSymbols.add(ir[i].dst)
             if ST.lookUp(ir[i].src1):
                 listOfSymbols.add(ir[i].src1)
-            
+
             if ST.lookUp(ir[i].src2):
                 listOfSymbols.add(ir[i].src2)
 
         elif ir[i].type in type_3:
 
             if ir[i].type != 'ifgoto' and ir[i].type != 'callint':
-                
-                
+
                 listOfSymbols.add(ir[i].dst)
                 if ST.lookUp(ir[i].src1):
                     listOfSymbols.add(ir[i].src1)
@@ -39,28 +38,17 @@ def nextUseTable(x, ST, ir, type_1, type_2, type_3, type_4):
             elif ir[i].type == 'scan':
                 listOfSymbols.add(ir[i].dst)
 
-
-
-    for i in range(start,end+1):
+    for i in range(start, end + 1):
         for j in listOfSymbols:
             tableToRet[i][j] = {}
             tableToRet[i][j]["live"] = False
-            tableToRet[i][j]["nextUse"]=False
+            tableToRet[i][j]["nextUse"] = False
 
+    for i in range(end, start - 1, -1):
 
-
-
-
-
-
-
-
-    for i in range(end, start-1, -1):
-
-
-    	if i!=end:
-        	for k in tableToRet[i]:
-        		tableToRet[i][k] = tableToRet[i+1][k].copy() 
+        if i != end:
+            for k in tableToRet[i]:
+                tableToRet[i][k] = tableToRet[i + 1][k].copy()
 
         if ir[i].type in type_4:
 
@@ -70,7 +58,7 @@ def nextUseTable(x, ST, ir, type_1, type_2, type_3, type_4):
             if ST.lookUp(ir[i].src1):
                 (tableToRet[i])[ir[i].src1]["live"] = True
                 (tableToRet[i])[ir[i].src1]["nextUse"] = i
-            
+
             if ST.lookUp(ir[i].src2):
                 (tableToRet[i])[ir[i].src2]["live"] = True
                 (tableToRet[i])[ir[i].src2]["nextUse"] = i
@@ -78,7 +66,7 @@ def nextUseTable(x, ST, ir, type_1, type_2, type_3, type_4):
         elif ir[i].type in type_3:
 
             if ir[i].type != 'ifgoto' and ir[i].type != 'callint':
-                
+
                 (tableToRet[i])[ir[i].dst]["live"] = False
                 (tableToRet[i])[ir[i].dst]["nextUse"] = False
 
@@ -103,7 +91,5 @@ def nextUseTable(x, ST, ir, type_1, type_2, type_3, type_4):
 
     for i in range(start, end):
         tableToRet[i] = tableToRet[i + 1]
-
-    
 
     return tableToRet
