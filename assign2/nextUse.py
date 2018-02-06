@@ -45,7 +45,7 @@ def nextUseTable(x):
         for j in listOfSymbols:
             tableToRet[i][j] = {}
             tableToRet[i][j]["live"] = False
-            tableToRet[i][j]["nextUse"] = False
+            tableToRet[i][j]["nextUse"] = None
 
     for i in range(end, start - 1, -1):
 
@@ -56,7 +56,7 @@ def nextUseTable(x):
         if ir[i].type in type_4:
 
             (tableToRet[i])[ir[i].dst]["live"] = False
-            (tableToRet[i])[ir[i].dst]["nextUse"] = False
+            (tableToRet[i])[ir[i].dst]["nextUse"] = None
 
             if ST.lookUp(ir[i].src1):
                 (tableToRet[i])[ir[i].src1]["live"] = True
@@ -71,7 +71,7 @@ def nextUseTable(x):
             if ir[i].type != 'ifgoto' and ir[i].type != 'callint':
 
                 (tableToRet[i])[ir[i].dst]["live"] = False
-                (tableToRet[i])[ir[i].dst]["nextUse"] = False
+                (tableToRet[i])[ir[i].dst]["nextUse"] = None
 
                 if ST.lookUp(ir[i].src1):
                     (tableToRet[i])[ir[i].src1]["live"] = True
@@ -90,7 +90,7 @@ def nextUseTable(x):
 
             elif ir[i].type == 'scan':
                 (tableToRet[i])[ir[i].dst]["live"] = False
-                (tableToRet[i])[ir[i].dst]["nextUse"] = False
+                (tableToRet[i])[ir[i].dst]["nextUse"] = None
 
     for i in range(start, end):
         tableToRet[i] = tableToRet[i + 1]

@@ -2,7 +2,7 @@ import input_ir
 import blocks
 import symbol
 import nextUse
-import init_symbols
+import genAsm
 import getreg
 from config import *
 

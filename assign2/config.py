@@ -2,10 +2,11 @@ import symbol
 
 
 # Corresponds to 4 operand instructions
+# x is multiply and * is dereference
 type_4 = ['+', '-', 'x', '/', '%', '&', '|', '^', '<<', '>>', '==', '<', '>', '!=', '<=', '>=']
 
 # Corresponds to 3 operand instructions
-type_3 = ['=', '!', '+=', '-=', 'x=', '/=', '%=', '&=',
+type_3 = ['=', '=!', '+=', '-=', 'x=', '/=', '%=', '&=',
           '|=', '^=', '<<=', '>>=', '*', 'ifgoto', 'callint']
 
 # Corresponds to 2 operand instructions
@@ -43,3 +44,9 @@ regDes = {
 
 # Address Descriptor
 addrDes = {}
+
+def check_int(s):
+    if s[0] in ('-', '+'):
+        return s[1:].isdigit()
+    return s.isdigit()
+
