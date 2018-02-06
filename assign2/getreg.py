@@ -1,15 +1,6 @@
 from config import *
 import genAsm
 
-
-# Initializes addrDes
-def createAddrDesc():
-    table = ST.globalSymbolList
-
-    for symbol in table:
-        if ST.table[symbol]['type'] != 'void':
-            addrDes[symbol] = {"register": None, "memory": False}
-
 # finds and returns an empty register. returns None if not exist.
 def emptyReg():
     for key, value in regDes.iteritems():
@@ -20,8 +11,8 @@ def emptyReg():
 
 # Returns if register is required for Op operation
 def regImp(instrNum):
-
-    pass
+    # if 
+    return True
 
 
 def splitReg(reg, var):
@@ -52,22 +43,22 @@ def regAlloc(instrNum, nextUseTable):
 # Returns the register name if possible, otherwise return None, i.e., use default memory location.
 # No immediate operation in IR except for assignment, and returns the number itself in case of assignment.
 def getreg(instrNum, nextUseTable):
-    if ir[instrNum] in type_4:
+    if ir[instrNum].type in type_4:
         # x = y Op z
         x = ir[instrNum].dst
         y = ir[instrNum].src1
         z = ir[instrNum].src2
-        if (addrDes[y]['register'] != None) and (nextUseTable[instrNum][y]['live'] is false):
+        if (addrDes[y]['register'] != None) and (nextUseTable[instrNum][y]['nextUse'] is None):
             return addrDes[y]['register']
         elif emptyReg() != None:
             return emptyReg()
         else:
-            if nextUseTable[instrNum][x]['live'] or regImp(instrNum):
+            if nextUseTable[instrNum][x]['nextUse'] is None or regImp(instrNum):
                 return regAlloc(nextUseTable)
             else:
                 return None # Use it's default memory location defined in .data section
 
-    elif ir[instrNum] in type_3:
+    elif ir[instrNum].type in type_3:
         # x Op= y
         x = ir[instrNum].dst
         y = ir[instrNum].src1
@@ -86,12 +77,12 @@ def getreg(instrNum, nextUseTable):
             elif emptyReg() != None:
                 return emptyReg()
             else:
-                if nextUseTable[instrNum][x]['live'] or regImp(instrNum):
+                if nextUseTable[instrNum][x]['nextUse'] is None or regImp(instrNum):
                     return regAlloc(nextUseTable)
                 else:
                     return None # Use it's default memory location defined in .data section
 
-    elif ir[instrNum] in type_2:
+    elif ir[instrNum].type in type_2:
         # x++ or retint x
         x = ir[instrNum].dst
         if ir[instrNum].type == 'retint':
@@ -107,7 +98,7 @@ def getreg(instrNum, nextUseTable):
             elif emptyReg() != None:
                 return emptyReg()
             else:
-                if nextUseTable[instrNum][x]['live'] or regImp(instrNum):
+                if nextUseTable[instrNum][x]['nextUse'] is None or regImp(instrNum):
                     return regAlloc(nextUseTable)
                 else:
                     return None # Use it's default memory location defined in .data section

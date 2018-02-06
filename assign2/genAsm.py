@@ -15,3 +15,6 @@ def initializeGlobals():
 # at&t format
 def genInstr(instr):
     f.write('\t' + instr + '\n')
+
+def closeFile():
+	f.close()
