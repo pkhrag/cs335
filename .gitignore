@@ -3,3 +3,5 @@
 *.asm
 *.s
 *.S
+.gdb*
+peda-session*
