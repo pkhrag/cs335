@@ -12,6 +12,7 @@ class instruction3AC:
             raise ValueError('Instruction ' + insType + ' not defined')
 
         self.type = insType
+        self.instr = ', '.join(i for i in instr)
 
         if insType in type_4:
             if len(instr) != 5:
@@ -29,6 +30,7 @@ class instruction3AC:
                 raise ValueError('Inappropriate number of operands in ' +
                                  ', '.join(i for i in instr))
             self.dst = instr[2]
+            self.src1 = instr[3]
 
             # callint var_name function_name
             if (self.type == 'callint'):
@@ -39,7 +41,6 @@ class instruction3AC:
             if (self.type != 'ifgoto'):
                 ST.insert(self.dst, "int")
 
-            self.src1 = instr[3]
 
         elif insType in type_2:
             if len(instr) != 3:

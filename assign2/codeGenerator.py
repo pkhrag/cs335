@@ -12,6 +12,7 @@ def codeGen(x, nextUseTable):
             flag = 1
 
 	for lineNo in range(start,end+1-flag):
+                genAsm.genInstr("# " + ir[lineNo].instr)
 		# print "hee heya"
 		codeGeneratorPerLine(lineNo, nextUseTable)
 
@@ -24,6 +25,7 @@ def codeGen(x, nextUseTable):
                         addrDes[symbol]['memory'] = True
 
         if flag:
+            genAsm.genInstr("# " + ir[end].instr)
             codeGeneratorPerLine(end, nextUseTable)
 
 
@@ -84,9 +86,9 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 
 	if ir[lineNo].type in type_4:
 
+		regSrc1 = addrDes[ir[lineNo].src1]['register']
 		locationDst = getreg.getreg(lineNo, nextUseTable)
 		# print "heya"
-		regSrc1 = addrDes[ir[lineNo].src1]['register']
 		if regSrc1 is not None and regSrc1 != locationDst:
 			genAsm.genInstr("movl %" + regSrc1 + ", %" + locationDst)
 		elif regSrc1 is None and regSrc1 != locationDst:
@@ -131,6 +133,7 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 	elif ir[lineNo].type in type_3:
 
 		## ifgoto type
+                ## Only dutta can do this
 		if ir[lineNo].type == 'ifgoto':
 			pass
 			##TODO
@@ -155,8 +158,8 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 
 			## function call
 			if locationDst == 'eax':
-				pass
-				##TODO
+                            genAsm.genInstr(instrType + ' ' + ir[lineNo].src1)
+                            genAsm.genInstr('movl %eax, ' + ir[lineNo].dst)
 
 			## in general a+=b type instructions
 			else:
@@ -220,8 +223,20 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
                     genAsm.genInstr(instrType + ' ' + ir[lineNo].dst)
 
 		elif ir[lineNo].type == 'retint':
-			pass
-			#TODO
+                    locationDst = getreg.getreg(lineNo, nextUseTable)
+                    if check_int(ir[lineNo].dst):
+                        genAsm.genInstr('movl $' + ir[lineNo].dst + ', %' + locationDst)
+                    else:
+                        regDst = addrDes[ir[lineNo].dst]['register']
+                        if (regDst is None):
+                            genAsm.genInstr('movl (' + ir[lineNo].dst + '), %' + locationDst)
+                        else :
+                            genAsm.genInstr('movl %' + regDst + ', %' + locationDst)
+
+                    genAsm.genInstr("leave")
+                    genAsm.genInstr(instrType)
+
+
 
 
 	elif ir[lineNo].type in type_1:
