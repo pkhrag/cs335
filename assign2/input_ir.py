@@ -18,6 +18,8 @@ def dutta_input():
 
     for x in lines:
         appendList = x.strip().split(",")
+        for i in range(len(appendList)):
+            appendList[i] = appendList[i].replace(" ", "")
         toRet.append(appendList)
 
     return toRet

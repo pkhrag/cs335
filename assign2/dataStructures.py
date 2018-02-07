@@ -1,4 +1,4 @@
-from config import *   
+from config import *
 
 
 # Creates IR table
@@ -31,6 +31,11 @@ class instruction3AC:
             self.dst = instr[2]
 
             # callint var_name function_name
+            if (self.type == 'callint'):
+                if ST.lookUp(self.src1):
+                    ST.updateArgList(self.src1, "type", "func")
+                else:
+                    ST.insert(self.src1, "func")
             if (self.type != 'ifgoto'):
                 ST.insert(self.dst, "int")
 
@@ -43,8 +48,15 @@ class instruction3AC:
 
             self.dst = instr[2]
 
+            if(self.type == 'callvoid'):
+                if ST.lookUp(self.dst):
+                    ST.updateArgList(self.dst, "type", "func")
+                else:
+                    ST.insert(self.dst, "func")
+
             if (self.type == 'label'):
-                ST.insert(self.dst, "void")
+                if ST.lookUp(self.dst) is False:
+                    ST.insert(self.dst, "void")
 
         else:
             if len(instr) != 2:

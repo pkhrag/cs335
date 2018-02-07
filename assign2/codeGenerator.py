@@ -7,19 +7,28 @@ def codeGen(x, nextUseTable):
 	start = x[0]
 	end = x[1]
  	# print "heya"
-	for lineNo in range(start,end+1):
+        flag = 0
+        if ir[end].type == 'retint' or ir[end].type == 'retvoid' or ir[end].type == 'goto' or ir[end].type == 'callint' or ir[end].type == 'callvoid'  :
+            flag = 1
+
+	for lineNo in range(start,end+1-flag):
 		# print "hee heya"
 		codeGeneratorPerLine(lineNo, nextUseTable)
-	
+
 	## Write all the registers back to Memory
-	for reg, symbol in regDes.iteritems():
-		if symbol is not None:
+        for reg, symbol in regDes.iteritems():
+		if symbol is not None and addrDes[symbol]['memory'] is False:
 			genAsm.genInstr('movl %' + reg + ', ' + symbol)
-	## TODO
+                        # regDes[reg] = None
+                        #  addrDes[symbol]['register'] = None
+                        addrDes[symbol]['memory'] = True
+
+        if flag:
+            codeGeneratorPerLine(end, nextUseTable)
 
 
 def codeGeneratorPerLine(lineNo, nextUseTable):
-	
+
 	instrType = "heya"
 	## need to segregate instrType on the basis of immediate?
 	## long switch case for deciphering the kind of instruction store that in instrType
@@ -113,7 +122,7 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 		# 	for x in regDes:
 		# 		if regDes[x] == ir[lineNo].src2:
 		# 			regDes[x] = None
-	
+
 
 
 
@@ -140,10 +149,10 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 			# 	for x in regDes:
 			# 		if regDes[x] == ir[lineNo].dst:
 			# 			regDes[x] = None
-		
+
 		else:
 			locationDst = getreg.getreg(lineNo, nextUseTable)
-			
+
 			## function call
 			if locationDst == 'eax':
 				pass
@@ -152,14 +161,14 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 			## in general a+=b type instructions
 			else:
 				isRegSrc = addrDes[ir[lineNo].src1]['register']
-			
-				## if source variable is in memory	
+
+				## if source variable is in memory
 				if isRegSrc is None:
-					
+
 					genAsm.genInstr(instrType + " (" + ir[lineNo].src1 + "), %" + locationDst)
 					addrDes[ir[lineNo].dst]['register'] = locationDst
 					addrDes[ir[lineNo].dst]['memory'] = False
-					
+
 
 				## if source variable is in register already
 				else :
@@ -171,7 +180,7 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 						genAsm.genInstr("movl %" + isRegSrc + ", " + ir[lineNo].src1)
 						addrDes[ir[lineNo].src1]['register'] = None
 						addrDes[ir[lineNo].src1]['memory'] = True
-						
+
 				## delete register occurrences if source variable is not used again in bbl
 				# if nextUseTable[lineNo][ir[lineNo].src1]['nextUse'] is None:
 				# 	for x in regDes:
@@ -193,8 +202,11 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 				genAsm.genInstr(instrType + " %" + ir[lineNo].dst)
 
 		elif ir[lineNo].type == 'label':
-			pass
-			#TODO
+                    genAsm.genLabel(ir[lineNo].dst)
+                    if ST.table[ir[lineNo].dst]['type'] == "func":
+                        genAsm.genInstr("pushl %ebp")
+                        genAsm.genInstr("movl %esp,  %ebp")
+
 		elif ir[lineNo].type == 'print':
 			pass
 			#TODO
@@ -202,19 +214,19 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 			pass
 			#TODO
 		elif ir[lineNo].type == 'callvoid':
-			pass
-			#TODO
+                    genAsm.genInstr(instrType + " " + ir[lineNo].dst)
+
 		elif ir[lineNo].type == 'goto':
-			pass
-			#TODO
+                    genAsm.genInstr(instrType + ' ' + ir[lineNo].dst)
+
 		elif ir[lineNo].type == 'retint':
 			pass
 			#TODO
 
 
 	elif ir[lineNo].type in type_1:
-		pass
-		#TODO for retvoid
+            genAsm.genInstr("leave")
+            genAsm.genInstr(instrType)
 
 
-				
+
