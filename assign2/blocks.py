@@ -14,7 +14,11 @@ def findBlocks():
             start = index + 1
         # Starting new basic block
         elif index > start and instr.type == 'label':
+            # print "hey"
             bbl.append((start, index - 1))
             start = index
+
+        elif index == len(ir)-1:
+            bbl.append((start,index))
 
     return bbl

@@ -19,9 +19,13 @@ for i in raw_ir:
 dataStructures.createAddrDesc()
 
 # intitialize the global variables 
-init_symbols.initializeGlobals()
+genAsm.initializeGlobals()
 
+bbl = blocks.findBlocks()
 ## Code generator crux part (text part of .s file)
+# print "heya"    
 for x in bbl:
     nextUseTable = nextUse.nextUseTable(x)
     codeGenerator.codeGen(x,nextUseTable)
+
+genAsm.closeFile()

@@ -28,7 +28,7 @@ def regAlloc(instrNum, nextUseTable):
     for key, value in regDes.iteritems():
         if key != 'esp' and key != 'ebp':
             var = value
-            if (var not in nextUseTable[instrNum]) or (nextUseTable[instrNum][var]['nextUse'] == None):
+            if (var not in nextUseTable[instrNum]) or (nextUseTable[instrNum][var]['nextUse'] is None):
                 splitReg(key, var)
                 return key
             else:
@@ -53,7 +53,7 @@ def getreg(instrNum, nextUseTable):
         elif emptyReg() != None:
             return emptyReg()
         else:
-            if nextUseTable[instrNum][x]['nextUse'] is None or regImp(instrNum):
+            if nextUseTable[instrNum][x]['nextUse'] is not None or regImp(instrNum):
                 return regAlloc(nextUseTable)
             else:
                 return None # Use it's default memory location defined in .data section
@@ -77,7 +77,7 @@ def getreg(instrNum, nextUseTable):
             elif emptyReg() != None:
                 return emptyReg()
             else:
-                if nextUseTable[instrNum][x]['nextUse'] is None or regImp(instrNum):
+                if nextUseTable[instrNum][x]['nextUse'] is not None or regImp(instrNum):
                     return regAlloc(nextUseTable)
                 else:
                     return None # Use it's default memory location defined in .data section

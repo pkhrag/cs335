@@ -1,3 +1,6 @@
+from config import *   
+
+
 # Creates IR table
 
 

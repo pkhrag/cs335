@@ -95,4 +95,9 @@ def nextUseTable(x):
     for i in range(start, end):
         tableToRet[i] = tableToRet[i + 1]
 
+    ## make all live and next Use none for last instruction
+    for i in listOfSymbols:
+        tableToRet[end][i]["live"] = False
+        tableToRet[end][i]["nextUse"] = None
+
     return tableToRet
