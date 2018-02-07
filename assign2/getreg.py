@@ -16,10 +16,11 @@ def regImp(instrNum):
 
 
 def splitReg(reg, var):
-    genAsm.genInstr("movl %" + reg + ", " + var)
+    if addrDes[var]['memory'] is False:
+        genAsm.genInstr("movl %" + reg + ", " + var)
+        addrDes[var]['memory'] = True
     addrDes[var]['register'] = None
     regDes[reg] = None
-    addrDes[var]['memory'] = True
 
 # finds and splits a register
 def regAlloc(instrNum, nextUseTable):
