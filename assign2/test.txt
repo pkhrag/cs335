@@ -2,10 +2,8 @@
 1,label,L
 2,=,b,7
 3,+,a,a,b
-4,<=,c,a,50
-5,ifgoto,c,L
-6,callvoid,foo
-7,retvoid
-8,label,foo
-9,print,a
-10,retvoid
+4,=,d,50
+5,+,j,a,a
+6,=,c,j
+7,+,d,c,b
+8,-,e,d,c

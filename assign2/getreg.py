@@ -16,7 +16,7 @@ def regImp(instrNum):
 
 
 def splitReg(reg, var):
-    genAsm.genInstr("movl %" + reg + ", $" + var)
+    genAsm.genInstr("movl %" + reg + ", " + var)
     addrDes[var]['register'] = None
     regDes[reg] = None
     addrDes[var]['memory'] = True
@@ -49,7 +49,12 @@ def getreg(instrNum, nextUseTable):
         y = ir[instrNum].src1
         z = ir[instrNum].src2
         if (addrDes[y]['register'] != None) and (nextUseTable[instrNum][y]['nextUse'] is None):
-            return addrDes[y]['register']
+            reg = addrDes[y]['register']
+            # if addrDes[y]['memory'] is False:
+            genAsm.genInstr("movl %" + reg + ", " + y)
+            addrDes[y]['memory'] = True
+            addrDes[y]['register'] = None
+            return reg
         elif emptyReg() != None:
             return emptyReg()
         else:
@@ -102,6 +107,3 @@ def getreg(instrNum, nextUseTable):
                     return regAlloc(nextUseTable)
                 else:
                     return None # Use it's default memory location defined in .data section
-
-
-

@@ -27,19 +27,19 @@ regDes = {
     'esp': None,
     'ebp': None,
     'eax': None,
-    'ebx': None,
-    'ecx': None,
-    'edx': None,
-    'esi': None,
-    'edi': None,
-    'r8D': None,
-    'r9D': None,
-    'r10D': None,
-    'r11D': None,
-    'r12D': None,
-    'r13D': None,
-    'r14D': None,
-    'r15D': None
+    'ebx': None
+   # 'ecx': None,
+   #  'edx': None,
+   #  'esi': None,
+   #  'edi': None,
+   #  'r8D': None,
+   #  'r9D': None,
+   #  'r10D': None,
+   #  'r11D': None,
+   #  'r12D': None,
+   #  'r13D': None,
+   #  'r14D': None,
+   #  'r15D': None
 }
 
 # Address Descriptor
