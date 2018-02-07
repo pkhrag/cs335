@@ -1,9 +1,9 @@
-0,=,a,2
-1,label,L
-2,=,b,7
-3,+,a,a,b
-4,=,d,50
-5,+,j,a,a
-6,=,c,j
-7,+,d,c,b
-8,-,e,d,c
+1, =, a, 2
+2, =, b, 7
+3, +, a, a, b
+5, callvoid, foo
+6, +, c, a, b
+5, retvoid
+7, label, foo
+8, =, b, 3
+9, retvoid

@@ -11,7 +11,7 @@ def emptyReg():
 
 # Returns if register is required for Op operation
 def regImp(instrNum):
-    # if 
+    # if
     return True
 
 
@@ -50,10 +50,10 @@ def getreg(instrNum, nextUseTable):
         z = ir[instrNum].src2
         if (addrDes[y]['register'] != None) and (nextUseTable[instrNum][y]['nextUse'] is None):
             reg = addrDes[y]['register']
-            # if addrDes[y]['memory'] is False:
-            genAsm.genInstr("movl %" + reg + ", " + y)
-            addrDes[y]['memory'] = True
-            addrDes[y]['register'] = None
+            if addrDes[y]['memory'] is False:
+                genAsm.genInstr("movl %" + reg + ", " + y)
+                addrDes[y]['memory'] = True
+                addrDes[y]['register'] = None
             return reg
         elif emptyReg() != None:
             return emptyReg()

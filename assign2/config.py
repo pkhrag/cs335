@@ -45,6 +45,9 @@ regDes = {
 # Address Descriptor
 addrDes = {}
 
+# Stack of symbols to keep track of the function return variables, implemented through list.
+stack = []
+
 def check_int(s):
     if s[0] in ('-', '+'):
         return s[1:].isdigit()
