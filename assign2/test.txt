@@ -1,10 +1,16 @@
 1, =, a, 2
 2, =, b, 7
-3, goto, foo
 3, <, a, a, b
-4, +, c, b, b
-4, -, d, a, b
+3, ifgoto, a, zoo
+4, label, koo
+4, --, b
+4, =, c, 6
+5, callint, c, foo
 6, +, c, a, b
+5, retvoid
 7, label, foo
-8, +=, b, 4
-9, retvoid
+8, +=, c, 4
+9, retint, c
+10, label, zoo
+11, =, a, 96
+12, goto, koo

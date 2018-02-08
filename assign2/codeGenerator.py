@@ -39,12 +39,12 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 		return {
 			'+': "addl",
 			'-': "subl",
-			'x': "imul", #todo
-			'/': "div", #todo
-			'%': "mod", #todo
-			'&': "and", #todo
-			'|': "or", #todo
-			'^': "xor", #todo
+			'x': "imul", 
+			'/': "idiv",
+			'%': "mod",
+			'&': "and", 
+			'|': "or", 
+			'^': "xor", 
 			'==': "cmp", 
 			'<': "cmp",
 			'>': "cmp",
@@ -52,22 +52,20 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 			'<=': "cmp",
 			'>=': "cmp",
 			'=': "movl",
-			'=!': "not",#todo
+			'!': "notl",
 			'+=': "addl",
 			'-=': "subl",
-			'x=': "imul",#todo
-			'/': "div",#todo
-			'%=': "mod",#todo
-			'&=': "and",#todo
-			'|=': "or",#todo
-			'^=': "xor",#todo
-			'*': "lea",#todo
-			'++': "inc",#todo
-			'--': "dec",#todo
+			'x=': "imul",
+			'&=': "and",
+			'|=': "or",
+			'^=': "xor",
+			# '*': "lea",
+			'++': "incl",
+			'--': "decl",
 			'label' : "label",
 			'print': "print",#todo
 			'scan' : "scan",#todo
-			'ifgoto': "ifgoto",#todo
+			'ifgoto': "jne",
 			'callint': "call",
 			'callvoid': "call",
 			'goto': "jmp",
@@ -83,8 +81,60 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 
 	if ir[lineNo].type in type_4:
 
+		# For shitty divide and mod 
+		if ir[lineNo].type == '/' or ir[lineNo].type == '%':
+			
+			edx = regDes['edx']
+			eax = regDes['eax']
+			
+			if edx is not None:
+				genAsm.genInstr("movl %edx, " + edx)
+			if eax is not None:
+				genAsm.genInstr("movl %eax, " + eax)
+
+			
+			genAsm.genInstr("movl $0, %edx")
+			if addrDes[ir[lineNo].src1]['register'] is not None:
+				dividend = addrDes[ir[lineNo].src1]['register']
+				genAsm.genInstr("movl %" + dividend + ", %eax")
+			else:
+				dividend = ir[lineNo].src1
+				genAsm.genInstr("movl " + dividend + ", %eax")
+
+			if addrDes[ir[lineNo].src2]['register'] is not None:
+				divisor = addrDes[ir[lineNo].src2]['register']
+				genAsm.genInstr("idiv %" + divisor)
+			else:
+				divisor = ir[lineNo].src2
+				genAsm.genInstr("idiv " + divisor)
+			
+			
+			if ir[lineNo].type == '/':
+				if addrDes[ir[lineNo].dst]['register'] is None:
+					genAsm.genInstr("movl %eax, " + ir[lineNo].dst)
+				else:
+					quet = addrDes[ir[lineNo].dst]['register']
+					genAsm.genInstr("movl %eax, %" + quet)
+					addrDes[ir[lineNo].dst]['memory'] = False
+			else:
+				if addrDes[ir[lineNo].dst]['register'] is None:
+					genAsm.genInstr("movl %edx, " + ir[lineNo].dst)
+				else:
+					quet = addrDes[ir[lineNo].dst]['register']
+					genAsm.genInstr("movl %edx, %" + quet)
+					addrDes[ir[lineNo].dst]['memory'] = False
+
+			if edx is not None:
+				genAsm.genInstr("movl (" + edx + "), %edx")
+			if eax is not None:
+				genAsm.genInstr("movl (" + eax + "), %eax")
+
+
+			return
+		
 		regSrc1 = addrDes[ir[lineNo].src1]['register']
 		locationDst = getreg.getreg(lineNo, nextUseTable)
+
 		# print "heya"
 		if regSrc1 is not None and regSrc1 != locationDst:
 			genAsm.genInstr("movl %" + regSrc1 + ", %" + locationDst)
@@ -115,21 +165,22 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 
 
 		## for compare types
-		var = regDes['eax']
-		if var is None: 
-			genCompare(ir[lineNo].type)
-			if ir[lineNo].type in comparators:
-					genAsm.genInstr("movzbl %al, %" + locationDst)
-		else:
-			genAsm.genInstr("movl %eax, " + var)
-			genCompare(ir[lineNo].type)
-			if ir[lineNo].type in comparators:
-					genAsm.genInstr("movzbl %al, %" + locationDst)
-			genAsm.genInstr("movl (" + var + "), %eax")
+		if ir[lineNo].type in comparators:
+			var = regDes['eax']
+			if var is None: 
+				genCompare(ir[lineNo].type)
+				genAsm.genInstr("movzbl %al, %" + locationDst)
+			else:
+				if locationDst != 'eax':
+					genAsm.genInstr("movl %eax, " + var)
+				genCompare(ir[lineNo].type)
+				genAsm.genInstr("movzbl %al, %" + locationDst)
+				if locationDst != 'eax':
+					genAsm.genInstr("movl (" + var + "), %eax")
 
 
 
-# TODO:- what if x is not in register
+
 		addrDes[ir[lineNo].dst]['register'] = locationDst
 		addrDes[ir[lineNo].dst]['memory'] = False
 
@@ -158,8 +209,14 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 		## ifgoto type
 				## Only dutta can do this
 		if ir[lineNo].type == 'ifgoto':
-			pass
-			#TODO
+			regDst = addrDes[ir[lineNo].dst]['register']
+			if regDst is None:
+				genAsm.genInstr("cmp $0, (" + ir[lineNo].dst + ")")
+			else:
+				genAsm.genInstr("cmp $0, %" + regDst)
+
+
+			genAsm.genInstr(instrType + " " + ir[lineNo].src1)
 
 		## immediate instructions a+=3 types
 		elif check_int(ir[lineNo].src1):
@@ -180,9 +237,9 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 			locationDst = getreg.getreg(lineNo, nextUseTable)
 
 			## function call
-			if locationDst == 'eax':
-							genAsm.genInstr(instrType + ' ' + ir[lineNo].src1)
-							genAsm.genInstr('movl %eax, ' + ir[lineNo].dst)
+			if ir[lineNo].type == 'callint':
+				genAsm.genInstr(instrType + ' ' + ir[lineNo].src1)
+				genAsm.genInstr('movl %eax, ' + ir[lineNo].dst)
 
 			## in general a+=b type instructions
 			else:
@@ -215,7 +272,7 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 
 	elif ir[lineNo].type in type_2:
 
-		if ir[lineNo].type in ["++","--"]:
+		if ir[lineNo].type in ["++","--","!"]:
 
 			isRegDst = addrDes[ir[lineNo].dst]['register']
 
@@ -226,12 +283,13 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 			## else increment a in register
 			else:
 				genAsm.genInstr(instrType + " %" + ir[lineNo].dst)
+				addrDes[ir[lineNo].dst]['memory'] = False
 
 		elif ir[lineNo].type == 'label':
-					genAsm.genLabel(ir[lineNo].dst)
-					if ST.table[ir[lineNo].dst]['type'] == "func":
-						genAsm.genInstr("pushl %ebp")
-						genAsm.genInstr("movl %esp,  %ebp")
+			genAsm.genLabel(ir[lineNo].dst)
+			if ST.table[ir[lineNo].dst]['type'] == "func":
+				genAsm.genInstr("pushl %ebp")
+				genAsm.genInstr("movl %esp,  %ebp")
 
 		elif ir[lineNo].type == 'print':
 			pass
@@ -240,31 +298,31 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 			pass
 			#TODO
 		elif ir[lineNo].type == 'callvoid':
-					genAsm.genInstr(instrType + " " + ir[lineNo].dst)
+			genAsm.genInstr(instrType + " " + ir[lineNo].dst)
 
 		elif ir[lineNo].type == 'goto':
-					genAsm.genInstr(instrType + ' ' + ir[lineNo].dst)
+			genAsm.genInstr(instrType + ' ' + ir[lineNo].dst)
 
 		elif ir[lineNo].type == 'retint':
-					locationDst = getreg.getreg(lineNo, nextUseTable)
-					if check_int(ir[lineNo].dst):
-						genAsm.genInstr('movl $' + ir[lineNo].dst + ', %' + locationDst)
-					else:
-						regDst = addrDes[ir[lineNo].dst]['register']
-						if (regDst is None):
-							genAsm.genInstr('movl (' + ir[lineNo].dst + '), %' + locationDst)
-						else :
-							genAsm.genInstr('movl %' + regDst + ', %' + locationDst)
+			locationDst = getreg.getreg(lineNo, nextUseTable)
+			if check_int(ir[lineNo].dst):
+				genAsm.genInstr('movl $' + ir[lineNo].dst + ', %' + locationDst)
+			else:
+				regDst = addrDes[ir[lineNo].dst]['register']
+				if (regDst is None):
+					genAsm.genInstr('movl (' + ir[lineNo].dst + '), %' + locationDst)
+				else :
+					genAsm.genInstr('movl %' + regDst + ', %' + locationDst)
 
-					genAsm.genInstr("leave")
-					genAsm.genInstr(instrType)
+			genAsm.genInstr("leave")
+			genAsm.genInstr(instrType)
 
 
 
 
 	elif ir[lineNo].type in type_1:
-			genAsm.genInstr("leave")
-			genAsm.genInstr(instrType)
+		genAsm.genInstr("leave")
+		genAsm.genInstr(instrType)
 
 
 

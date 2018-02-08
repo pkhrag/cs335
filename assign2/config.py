@@ -6,11 +6,13 @@ import symbol
 type_4 = ['+', '-', 'x', '/', '%', '&', '|', '^', '<<', '>>', '==', '<', '>', '!=', '<=', '>=']
 
 # Corresponds to 3 operand instructions
-type_3 = ['=', '=!', '+=', '-=', 'x=', '/=', '%=', '&=',
-          '|=', '^=', '<<=', '>>=', '*', 'ifgoto', 'callint']
+type_3 = ['=', '+=', '-=', 'x=', '&=',
+          '|=', '^=', '<<=', '>>=', 
+          # '*',
+           'ifgoto', 'callint']
 
 # Corresponds to 2 operand instructions
-type_2 = ['++', '--', 'label', 'print', 'scan', 'callvoid', 'goto', 'retint']
+type_2 = ['++', '!', '--', 'label', 'print', 'scan', 'callvoid', 'goto', 'retint']
 
 type_1 = ['retvoid']
 
@@ -27,11 +29,12 @@ regDes = {
     'esp': None,
     'ebp': None,
     'eax': None,
-    'ebx': None
-   # 'ecx': None,
-   #  'edx': None,
-   #  'esi': None,
-   #  'edi': None,
+    'ebx': None,
+    'ecx': None,
+    'edx': None,
+    'esi': None,
+    'edi': None
+}
    #  'r8D': None,
    #  'r9D': None,
    #  'r10D': None,
@@ -40,7 +43,6 @@ regDes = {
    #  'r13D': None,
    #  'r14D': None,
    #  'r15D': None
-}
 
 # Address Descriptor
 addrDes = {}
