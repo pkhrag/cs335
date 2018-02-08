@@ -1,11 +1,10 @@
 1, =, a, 2
 2, =, b, 7
-3, +, a, a, b
+3, goto, foo
+3, <, a, a, b
 4, +, c, b, b
 4, -, d, a, b
-5, callint, a, foo
 6, +, c, a, b
-5, retvoid
 7, label, foo
 8, +=, b, 4
-9, retint, b
+9, retvoid

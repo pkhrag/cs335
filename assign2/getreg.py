@@ -60,7 +60,7 @@ def getreg(instrNum, nextUseTable):
             return emptyReg()
         else:
             if nextUseTable[instrNum][x]['nextUse'] is not None or regImp(instrNum):
-                return regAlloc(nextUseTable)
+                return regAlloc(instrNum,nextUseTable)
             else:
                 return None # Use it's default memory location defined in .data section
 
