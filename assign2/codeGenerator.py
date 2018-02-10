@@ -240,6 +240,8 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 			if ir[lineNo].type == 'callint':
 				genAsm.genInstr(instrType + ' ' + ir[lineNo].src1)
 				genAsm.genInstr('movl %eax, ' + ir[lineNo].dst)
+				addrDes[ir[lineNo].dst]['register'] = None
+				addrDes[ir[lineNo].dst]['memory'] = True
 
 			## in general a+=b type instructions
 			else:
