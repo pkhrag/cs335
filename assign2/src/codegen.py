@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import input_ir
 import blocks
 import symbol
