@@ -1,18 +1,18 @@
-1, scanint
-2, getreturnval, num
-3, call, checkPrime
-4, getreturnval, result
-5, print, result
-6, exit
-7, function, checkPrime
-8, =, var1, 2
-9, label, label1
-10, ifgoto, ==, var1, num, exitFunc
-11, rem, temp, num, var1
-12, ifgoto, !=, temp, 0, label2
-13, return, 0
-14, label, label2
-15, +, var1, var1, 1
-16, goto, label1
-17, label, exitFunc
-18, return, 1
+1, =, flag, 0
+2, =, num, 97
+3, =, i, 2
+4, label, foo
+5, =, c, 0
+6, ==, c, i, num
+7, ifgoto, c, zoo
+8, =, d, 2
+9, %, d, num, i
+10, =, e, 0
+11, ==, e, d, e
+12, ifgoto, e, boo
+13, ++, i
+14, goto, foo
+17, label, boo
+18, =, flag, 1
+18, label, zoo
+19, retvoid

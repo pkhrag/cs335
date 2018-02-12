@@ -40,7 +40,7 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 			'+': "addl",
 			'-': "subl",
 			'x': "imul", 
-			'/': "idiv",
+			'/': "idivl",
 			'%': "mod",
 			'&': "and", 
 			'|': "or", 
@@ -103,10 +103,10 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 
 			if addrDes[ir[lineNo].src2]['register'] is not None:
 				divisor = addrDes[ir[lineNo].src2]['register']
-				genAsm.genInstr("idiv %" + divisor)
+				genAsm.genInstr("idivl %" + divisor)
 			else:
 				divisor = ir[lineNo].src2
-				genAsm.genInstr("idiv " + divisor)
+				genAsm.genInstr("idivl " + divisor)
 			
 			
 			if ir[lineNo].type == '/':

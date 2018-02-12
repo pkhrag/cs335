@@ -1,10 +1,14 @@
+1, =, res, 1
 1, =, a, 6
 1, =, b, 1
 2, callint, a, fact
 3, retvoid
 4, label, fact
-6, c, 1
+6, =, c, 1
 5, ==, b, a, c
 5, ifgoto, b, zoo
-5, 
-5, 
+5, x=,res,a
+5, --,a
+5, callint, a, fact
+5, label, zoo
+5, retint, c
