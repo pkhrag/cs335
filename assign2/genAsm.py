@@ -8,10 +8,12 @@ def initializeGlobals():
     for x in symbolList:
         if ST.table[x]["type"] == "int":
             f.write( x +":\n\t.int\t0\n")
-    f.write('\n.text\n\n.global _start\n\n_start:\n\n')
-    genInstr("call main")
+    f.write('outFormat:\n\t.asciz\t"%d\\n"\n')
+    f.write('inFormat:\n\t.ascii\t"%d"\n')
+    f.write('\n.text\n\n.global main\n\nmain:\n\n')
+    genInstr("call mainMandal")
     genInstr("jmp exit")
-    f.write('\n\nmain:\n\n')
+    f.write('\n\nmainMandal:\n\n')
     genInstr('pushl %ebp')
     genInstr('movl %esp, %ebp')
 
