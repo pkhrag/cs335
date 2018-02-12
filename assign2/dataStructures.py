@@ -55,10 +55,14 @@ class instruction3AC:
                 else:
                     ST.insert(self.dst, "func")
 
-            if (self.type == 'label'):
+            elif (self.type == 'label'):
                 if ST.lookUp(self.dst) is False:
                     ST.insert(self.dst, "void")
 
+	    elif (self.type != 'goto'):
+		if ST.lookUp(self.dst) is False:
+		    ST.insert(self.dst, "int")
+		
         else:
             if len(instr) != 2:
                 raise ValueError('Inappropriate number of operands in ' +
