@@ -1,0 +1,17 @@
+1, scan, a
+2, scan, b
+3, callvoid, gcd
+4, print, a
+4, retvoid
+5, label, gcd
+6, =, c, 0
+7, =, d, 0
+8, ==, d, c, b
+9, ifgoto, d, zoo
+10, =, k, 0
+11, %, k, a, b
+12, =, a, b
+13, =, b, k
+14, callvoid, gcd
+15, label, zoo
+16, retvoid 
