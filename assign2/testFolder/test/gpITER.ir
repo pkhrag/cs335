@@ -1,0 +1,19 @@
+1, scanint
+2, getreturnval, ft
+3, scanint
+4, getreturnval, cr
+5, scanint
+6, getreturnval, term
+7, ifgoto, <, term, 1, Leave
+8, =, result, ft
+9, label, while
+10, ifgoto, ==, term, 1, exitLabel
+11, *, result, result, cr
+12, -, term, term, 1
+13, goto, while
+14, label, exitLabel
+15, print, result
+16, exit
+17, label, Leave
+18 print, -1
+19, exit

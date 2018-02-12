@@ -1,0 +1,22 @@
+1, scanint
+2, getreturnval, var1
+3, scanint
+4, getreturnval, var2
+5, call, gcd
+6, getreturnval, result
+7, print, result
+8, exit
+9, function, gcd
+10, ifgoto, !=, var1, var2, exitIf1
+11, return, var1
+12, label, exitIf1
+13, ifgoto, <, var1, var2, exitIf2
+14, -, var1, var1, var2
+15, call, gcd
+16, getreturnval, result
+17, return, result
+18, label, exitIf2
+19, -, var2, var2, var1
+20, call, gcd
+21, getreturnval, result
+22, return, result

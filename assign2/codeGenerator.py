@@ -136,8 +136,8 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 		locationDst = getreg.getreg(lineNo, nextUseTable)
 		
 		isInMemory = addrDes[ir[lineNo].dst]['memory']
-		if isInMemory:
-			genAsm.genInstr('movl ('+ir[lineNo].dst+'), %'+locationDst)
+		#if isInMemory:
+		#	genAsm.genInstr('movl ('+ir[lineNo].dst+'), %'+locationDst)
 
 
 
@@ -157,9 +157,9 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 
 		## for compare types
 		if ir[lineNo].type == '>=':
-			genAsm.genInstr("addl $1, %" + locationDst)
-		elif ir[lineNo].type == '<':
 			genAsm.genInstr("subl $1, %" + locationDst)
+		elif ir[lineNo].type == '<':
+			genAsm.genInstr("addl $1, %" + locationDst)
 
 
 		## for all types
