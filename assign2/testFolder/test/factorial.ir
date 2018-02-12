@@ -1,7 +1,8 @@
 1, =, res, 1
-1, =, a, 6
+1, scan, a
 1, =, b, 1
 2, callint, a, fact
+3, print, res
 3, retvoid
 4, label, fact
 6, =, c, 1
