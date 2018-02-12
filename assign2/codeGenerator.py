@@ -365,6 +365,8 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 				genAsm.genInstr("pushl $" + regDes[addrDes[ir[lineNo].dst]['register']])
 				genAsm.genInstr("pushl $inFormat")
 				genAsm.genInstr(instrType)
+				addrDes[ir[lineNo].dst]["memory"] = True
+				genAsm.genInstr("movl (" + ir[lineNo].dst + "), %" + addrDes[ir[lineNo].dst]['register'])
 						
 
 		elif ir[lineNo].type == 'callvoid':

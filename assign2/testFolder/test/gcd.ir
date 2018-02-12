@@ -1,6 +1,7 @@
-1, =, a, 20
-2, =, b, 90
+1, scan, a
+2, scan, b
 3, callvoid, gcd
+4, print, a
 4, retvoid
 5, label, gcd
 6, =, c, 0
