@@ -161,8 +161,73 @@ parser = yacc.yacc()
 
 
 
-def printResult(graph):
-	pass
+def printResult(graph, prev, after):
+	
+	word = ""
+
+	if type(graph) is list:
+		for i in range (1,len(graph)):
+			if type(graph[i]) is list:
+				if word != "":
+					word = word + " " +graph[i][0]
+				else:
+					word = graph[i][0]
+			else:
+				if word != "":
+					word += " "+graph[i]
+				else:
+					word = graph[i]
+
+
+
+		if prev != "" and after != "":
+			final = prev + " " + word + " "+ after
+		elif prev == "" and after == "":
+			final = word
+		elif prev == "":
+			final = word + " " + after
+		else : 
+			final = prev + " " +word
+		print final
+	
+
+
+		for i in range(len(graph)-1,0,-1):
+			prevNew = prev
+
+			for j in range (1,i):
+				if type(graph[j]) is list:
+					if prevNew != "":
+						prevNew += " " + graph[j][0]
+					else :
+						prevNew = graph[j][0]
+				else:
+					if prevNew != "":
+						prevNew += " " + graph[j]
+					else:
+						prevNew = graph[j]
+			# print "prev " + prevNew
+			afterNew = after
+			# print "after " + afterNew
+			afterNew = printResult(graph[i],prevNew,afterNew)
+			# print "afterNew " + afterNew
+			after = afterNew
+
+
+		return after
+
+
+	
+	word = graph
+	# print "after String " + word + after
+	
+	if word != "":
+		return word+" "+after
+	return after
+		
+
+
+  
 
 
 try:
@@ -173,5 +238,8 @@ except EOFError:
 if not s:
   print("bas kar")
 result = parser.parse(s)
-printResult(result)
+
+print "start"
+printResult(result, "" , "")
+
 print(result)
