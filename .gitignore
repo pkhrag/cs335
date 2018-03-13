@@ -5,4 +5,5 @@
 *.S
 *.out
 .gdb*
+parsetab.py
 peda-session*
