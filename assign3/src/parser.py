@@ -127,7 +127,7 @@ def p_identifier_rep(p):
     '''IdentifierRep : IdentifierRep COMMA IDENTIFIER
                      | epsilon'''
     if len(p) == 4:
-        p[0] = ["IdentifierRep", p[1], ",", str(p[2])]
+        p[0] = ["IdentifierRep", p[1], ",", str(p[3])]
     else:
         p[0] = ["IdentifierRep", p[1]]
 
@@ -169,10 +169,10 @@ def p_func_body(p):
 def p_type_decl(p):
     '''TypeDecl : TYPE TypeSpec
                 | TYPE LPAREN TypeSpecRep RPAREN'''
-    if len(p) == 5
+    if len(p) == 5:
         p[0] = ["TypeDecl", "type", "(", p[3], ")"]
     else:
-        p[0] = ["TypeDecl", "type", p[1]]
+        p[0] = ["TypeDecl", "type", p[2]]
 
 def p_type_spec_rep(p):
     '''TypeSpecRep : TypeSpecRep TypeSpec SEMICOLON
@@ -306,7 +306,7 @@ parser = yacc.yacc()
 
 
 def printResult(graph, prev, after):
-	
+
 	word = ""
 
 	if type(graph) is list:
@@ -330,10 +330,10 @@ def printResult(graph, prev, after):
 			final = word
 		elif prev == "":
 			final = word + " " + after
-		else : 
+		else :
 			final = prev + " " +word
-		print final
-	
+		print final.replace(" epsilon", "")
+
 
 
 		for i in range(len(graph)-1,0,-1):
@@ -361,17 +361,17 @@ def printResult(graph, prev, after):
 		return after
 
 
-	
+
 	word = graph
 	# print "after String " + word + after
-	
+
 	if word != "":
 		return word+" "+after
 	return after
-		
 
 
-  
+
+
 
 
 try:
@@ -386,4 +386,3 @@ result = parser.parse(s)
 print "start"
 printResult(result, "" , "")
 
-print(result)
