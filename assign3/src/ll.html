@@ -1,0 +1,12 @@
+start : <b>expression</b><br><br>
+expression : expression PLUS term<br>
+term : term STAR factor<br>
+factor : INTEGER<br>
+term : factor<br>
+factor : INTEGER<br>
+expression : expression MINUS term<br>
+term : factor<br>
+factor : INTEGER<br>
+expression : term<br>
+term : factor<br>
+factor : INTEGER<br>

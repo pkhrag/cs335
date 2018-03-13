@@ -1,0 +1,11 @@
+1, =, a, 2
+2, =, b, 7
+3, =, c, 4
+4, =, d, 6
+5, +=, a, c
+6, callint, e, foo
+7, retvoid
+8, label, foo
+9, =, d, 3
+10, =, f, 123
+10, retint, d
