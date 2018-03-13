@@ -5,7 +5,6 @@ from lexer import tokens, data
 from pprint import pprint
 
 
-
 # ----------------  START --------------------------------
 def p_start(p):
     '''start : PackageClause SEMICOLON ImportDeclRep'''
@@ -13,12 +12,11 @@ def p_start(p):
 # --------------------------------------------------------
 
 
-
-
 # ---------- PACKAGE CLAUSE --------------------
 def p_package_clause(p):
     '''PackageClause : PACKAGE PackageName'''
     p[0] = ["PackageClause", "package", p[2]]
+
 
 def p_package_name(p):
     '''PackageName : IDENTIFIER'''
@@ -26,71 +24,72 @@ def p_package_name(p):
 # -----------------------------------------------
 
 
-
-
 # --------- IMPORT DECLARATIONS ---------------
 def p_import_decl_rep(p):
-	'''ImportDeclRep : ImportDeclRep ImportDecl
-					 | epsilon'''
-	if len(p) == 3:
-		p[0] = ["ImportDeclRep", p[1], p[2]]
-	else:
-		p[0] = ["ImportDeclRep", p[1]]
-		
+  '''ImportDeclRep : epsilon
+           | ImportDeclRep ImportDecl SEMICOLON'''
+  if len(p) == 4:
+    p[0] = ["ImportDeclRep", p[1], p[2], ";"]
+  else:
+    p[0] = ["ImportDeclRep", p[1]]
+
+
 def p_import_decl(p):
-	'''ImportDecl : IMPORT ImportSpec 
-				  | IMPORT LPAREN ImportSpecRep RPAREN'''
-	if len(p) == 3:
-		p[0] = ["ImportDecl", "import", ";"]
-	else:
-		p[0] = ["ImportDecl", "import", "(", p[3], ")"]
-		
+  '''ImportDecl : IMPORT ImportSpec
+          | IMPORT LPAREN ImportSpecRep RPAREN '''
+  if len(p) == 3:
+    p[0] = ["ImportDecl", "import", p[2]]
+  else:
+    p[0] = ["ImportDecl", "import", "(", p[3], ")"]
 
 
 def p_import_spec_rep(p):
-	''' ImportSpecRep : ImportSpecRep ImportSpec
-					  | epsilon '''
-	if len(p) == 3:
-		p[0] = ["ImportSpecRep", p[1], p[2]]
-	else:
-		p[0] = ["ImportSpecRep", p[1]]
+  ''' ImportSpecRep : ImportSpecRep ImportSpec SEMICOLON
+            | epsilon '''
+  if len(p) == 4:
+    p[0] = ["ImportSpecRep", p[1], p[2], ";"]
+  else:
+    p[0] = ["ImportSpecRep", p[1]]
+
 
 def p_import_spec(p):
-	''' ImportSpec : PackageNameDotOpt ImportPath '''
-	p[0] = ["ImportSpec", p[1], p[2]]
+  ''' ImportSpec : PackageNameDotOpt ImportPath '''
+  p[0] = ["ImportSpec", p[1], p[2]]
+
 
 def p_package_name_dot_opt(p):
-	''' PackageNameDotOpt : DOT 
-	                      | PackageName'''
-	if p[1]:
-		p[0] = ["PackageNameDotOpt", p[1]]
-	else :
-		p[0] = ["PackageNameDotOpt", "."]
+  ''' PackageNameDotOpt : DOT
+                        | PackageName
+                        | epsilon'''
+  if p[1]== '.':
+    p[0] = ["PackageNam", "."]
+  else:
+    p[0] = ["PackageNameDotOpt", p[1]]
 
 def p_import_path(p):
-	''' ImportPath : STRING '''
-	p[0] = ["ImportPath", p[1]]
+  ''' ImportPath : STRING '''
+  p[0] = ["ImportPath", p[1]]
 
 # -------------------------------------------------------
 
 
 
 # def p_toplevel_decl_rep(p):
-# 	'''TopLevelDeclRep : TopLevelDeclRep TopLevelDecl 
-# 					   | epsilon'''
-# 	if len(p) == 3:
-# 		p[0] = ["TopLevelDecl", p[1], p[2]]
-# 	else:
-# 		p[0] = ["TopLevelDecl", p[1]]
+#   '''TopLevelDeclRep : TopLevelDeclRep TopLevelDecl 
+#              | epsilon'''
+#   if len(p) == 3:
+#     p[0] = ["TopLevelDecl", p[1], p[2]]
+#   else:
+#     p[0] = ["TopLevelDecl", p[1]]
 
 # def p_toplevel_decl(p):
-# 	'''TopLevelDecl : epsilon'''
+#   '''TopLevelDecl : epsilon'''
 
 
 
 def p_empty(p):
-	'''epsilon : '''
-	p[0] = "epsilon"
+  '''epsilon : '''
+  p[0] = "epsilon"
 
 # def p_import_decl(p):
 
@@ -102,9 +101,9 @@ def p_empty(p):
 
 
 # def p_start(p):
-# 	'''start : expression'''
-# 	# p[0] = "<start>" + p[1] + "</start>"
-# 	p[0] = ['start', p[1]]
+#   '''start : expression'''
+#   # p[0] = "<start>" + p[1] + "</start>"
+#   p[0] = ['start', p[1]]
 
 # def p_expression_plus(p):
 #     '''expression : expression PLUS term
@@ -160,6 +159,12 @@ def p_error(p):
 # Build the parser
 parser = yacc.yacc()
 
+
+
+def printResult(graph):
+	pass
+
+
 try:
   s = data
   print(s)
@@ -168,4 +173,5 @@ except EOFError:
 if not s:
   print("bas kar")
 result = parser.parse(s)
+printResult(result)
 print(result)
