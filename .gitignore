@@ -3,5 +3,6 @@
 *.asm
 *.s
 *.S
+*.out
 .gdb*
 peda-session*
