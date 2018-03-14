@@ -544,27 +544,132 @@ def p_operand_name(p):
 # ---------------------------------------------------------
 
 
-#TODO
+# ------------------POINTER TYPES--------------------------
 def p_point_type(p):
-    '''PointerType : epsilon'''
-    p[0] = ["PointerType", p[1]]
+    '''PointerType : STAR BaseType'''
+    p[0] = ["PointerType", "*", p[2]]
+
+def p_base_type(p):
+    '''BaseType : Type'''
+    p[0] = ["BaseType", p[1]]
+# ---------------------------------------------------------
 
 
-
-#TODO
+# ---------------FUNCTION TYPES----------------------------
 def p_sign(p):
-    '''Signature : epsilon'''
-    p[0] = ["Signature", p[1]]
+    '''Signature : Parameters ResultOpt'''
+    p[0] = ["Signature", p[1], p[2]]
+
+def p_result_opt(p):
+    '''ResultOpt : Result
+                 | epsilon'''
+    p[0] = ["ResultOpt", p[1]]
+
+def p_result(p):
+    '''Result : Parameters
+              | Type'''
+    p[0] = ["Result", p[1]]
+
+def p_params(p):
+    '''Parameters : LPAREN ParameterListCommaOpt RPAREN'''
+    p[0] = ["Parameters", "(", p[2], ")"]
+
+def p_param_list_comma_opt(p):
+    '''ParameterListCommaOpt : ParametersList CommaOpt
+                             | epsilon'''
+    if len(p) == 3:
+        p[0] = ["ParameterListCommaOpt", p[1], p[2]]
+    else:
+        p[0] = ["ParameterListCommaOpt", p[1]]
+
+def p_param_list(p):
+    '''ParametersList : ParameterDecl ParameterDeclCommaRep'''
+    p[0] = ["ParametersList", p[1], p[2]]
+
+def p_param_decl_comma_rep(p):
+    '''ParameterDeclCommaRep : ParameterDeclCommaRep COMMA ParameterDecl
+                             | epsilon'''
+    if len(p) == 4:
+        p[0] = ["ParameterDeclCommaRep", p[1], ",", p[3]]
+    else:
+        p[0] = ["ParameterDeclCommaRep", p[1]]
+
+def p_param_decl(p):
+    '''ParameterDecl : IdentifierList Type
+                     | Type'''
+    if len(p) == 3:
+        p[0] = ["ParameterDecl", p[1], p[2]]
+    else:
+        p[0] = ["ParameterDecl", p[1]]
+# ---------------------------------------------------------
+
+
+# -----------------COMPOSITE LITERALS----------------------
+def p_comp_lit(p):
+    '''CompositeLit : LiteralType LiteralValue'''
+    p[0] = ["CompositeLit", p[1], p[2]]
+
+def p_lit_type(p):
+    '''LiteralType : StructType
+                   | ArrayType
+                   | ElementType
+                   | TypeName'''
+    p[0] = ["LiteralType", p[1]]
+
+def p_lit_val(p):
+    '''LiteralValue : LPAREN ElementListCommaOpt RPAREN'''
+    p[0] = ["LiteralValue", "{", p[2], "}"]
+
+def p_elem_list_comma_opt(p):
+    '''ElementListCommaOpt : ElementList CommaOpt
+                           | epsilon'''
+    if len(p) == 3:
+        p[0] = ["ElementListCommaOpt", p[1], p[2]]
+    else:
+        p[0] = ["ElementListCommaOpt", p[1]]
+
+def p_elem_list(p):
+    '''ElementList : KeyedElement KeyedElementCommaRep'''
+    p[0] = ["ElementList", p[1], p[2]]
+
+def p_key_elem_comma_rep(p):
+    '''KeyedElementCommaRep : KeyedElementCommaRep COMMA KeyedElement
+                            | epsilon'''
+    if len(p) == 4:
+        p[0] = ["KeyedElementCommaRep", p[1], ",", p[3]]
+    else:
+        p[0] = ["KeyedElementCommaRep", p[1]]
+
+def p_key_elem(p):
+    '''KeyedElement : Key COLON Element
+                    | Element'''
+    if len(p) == 4:
+        p[0] = ["KeyedElement", p[1], ":", p[3]]
+    else:
+        p[0] = ["KeyedElement", p[1]]
+
+def p_key(p):
+    '''Key : FieldName
+           | Expression
+           | LiteralValue'''
+    p[0] = ["Key", p[1]]
+
+def p_field_name(p):
+    '''FieldName : IDENTIFIER'''
+    p[0] = ["FieldName", p[1]]
+
+def p_elem(p):
+    '''Element : Expression
+               | LiteralValue'''
+    p[0] = ["Element", p[1], p[2]]
+# ---------------------------------------------------------
+
 
 #TODO
 def p_stat(p):
     '''Statement : epsilon'''
     p[0] = ["Statement", p[1]]
 
-#TODO
-def p_comp_lit(p):
-    '''CompositeLit : epsilon'''
-    p[0] = ["CompositeLit", p[1]]
 
 
 def p_empty(p):
