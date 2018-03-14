@@ -686,8 +686,7 @@ def p_statement(p):
                  | ForStmt '''
     p[0] = ["Statement", p[1]]
 
-<<<<<<< a89c4294ee1f9bf5d2b117cee29e8da897c474e1
-=======
+
 
 def p_labeled_statements(p):
   ''' LabeledStmt : Label SEMICOLON Statement '''
