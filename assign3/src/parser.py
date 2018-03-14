@@ -482,8 +482,9 @@ def p_argument(p):
     p[0] = ["Arguments", "(", p[2], ")"]
 
 def p_expr_list_type_opt(p):
-    '''ExpressionListTypeOpt : ExpressionList CommaOpt
-                             | Type ExpressionListCommaOpt CommaOpt'''
+    '''ExpressionListTypeOpt : ExpressionList
+                             | Type ExpressionListCommaOpt
+                             | epsilon'''
     if len(p) == 3:
         p[0] = ["ExpressionListTypeOpt", p[1], p[2]]
     else:
@@ -617,7 +618,7 @@ def p_lit_type(p):
     p[0] = ["LiteralType", p[1]]
 
 def p_lit_val(p):
-    '''LiteralValue : LPAREN ElementListCommaOpt RPAREN'''
+    '''LiteralValue : LCURL ElementListCommaOpt RCURL'''
     p[0] = ["LiteralValue", "{", p[2], "}"]
 
 def p_elem_list_comma_opt(p):
@@ -752,8 +753,12 @@ def p_SimpleStmtOpt(p):
 
 def p_else_opt(p):
   ''' ElseOpt : ELSE IfStmt
-              | ELSE Block '''
-  p[0] = ["ElseOpt", "else", p[2]]
+              | ELSE Block
+              | epsilon '''
+  if len(p) == 3:
+    p[0] = ["ElseOpt", "else", p[2]]
+  else:
+    p[0] = ["ElseOpt", p[1]]
 
 # ----------------------------------------------------------------
 
@@ -838,8 +843,12 @@ def p_type_list(p):
   p[0] = ["TypeList", p[1], p[2]]
 
 def p_type_rep(p):
-  ''' TypeRep : COMMA Type'''
-  p[0] = ["TypeRep", ",", p[2]]
+  ''' TypeRep : TypeRep COMMA Type
+              | epsilon '''
+  if len(p) == 4:
+    p[0] = ["TypeRep", p[1], ",", p[3]]
+  else:
+    p[0] = ["TypeRep", p[1]]
 
 # -----------------------------------------------------------
 
@@ -865,32 +874,41 @@ def p_condition(p):
   p[0] = ["Condition", p[1]]
 
 def p_forclause(p):
-  '''ForClause : InitStmtOpt SEMICOLON ConditionOpt SEMICOLON PostStmtOpt'''
+  '''ForClause : SimpleStmt SEMICOLON ConditionOpt SEMICOLON SimpleStmt'''
   p[0] = ["ForClause", p[1], ";", p[3], ";", p[5]]
 
-def p_initstmtopt(p):
-  '''InitStmtOpt : epsilon
-           | SimpleStmt '''
-  p[0] = ["InitStmtOpt", p[1]]
+# def p_initstmtopt(p):
+#   '''InitStmtOpt : epsilon
+#            | InitStmt '''
+#   p[0] = ["InitStmtOpt", p[1]]
+
+# def p_init_stmt(p):
+#   ''' InitStmt : SimpleStmt'''
+#   p[0] = ["InitStmt", p[1]]
+
 
 def p_conditionopt(p):
   '''ConditionOpt : epsilon
           | Condition '''
   p[0] = ["ConditionOpt", p[1]]
 
-def p_poststmtopt(p):
-  '''PostStmtOpt : epsilon
-           | SimpleStmt '''
-  p[0] = ["PostStmtOpt", p[1]]
+# def p_poststmtopt(p):
+#   '''PostStmtOpt : epsilon
+#            | PostStmt '''
+#   p[0] = ["PostStmtOpt", p[1]]
+
+# def p_post_stmt(p):
+#   ''' PostStmt : SimpleStmt '''
+#   # p[0] = ["PostStmt", p[1]]
 
 def p_rageclause(p):
-  '''RangeClause : ExpressionListOpt RANGE Expression'''
+  '''RangeClause : ExpressionIdentListOpt RANGE Expression'''
   p[0] = ["RangeClause", p[1], "range", p[3]]
 
-# def p_expressionlistopt(p):
-#   '''ExpressionListOpt : epsilon
-#              | ExpressionIdentifier'''
-#   p[0] = ["ExpressionListOpt", p[1]]
+def p_expression_ident_listopt(p):
+  '''ExpressionIdentListOpt : epsilon
+             | ExpressionIdentifier'''
+  p[0] = ["ExpressionIdentListOpt", p[1]]
 
 def p_expressionidentifier(p):
   '''ExpressionIdentifier : ExpressionList ASSIGN
@@ -901,13 +919,13 @@ def p_expressionidentifier(p):
     p[0] = ["ExpressionIdentifier", p[1], ":="]
 
 def p_return(p):
-  '''ReturnStmt : RETURN ExpressionListOpt'''
+  '''ReturnStmt : RETURN ExpressionListPureOpt'''
   p[0] = ["ReturnStmt", "return", p[2]]
 
-# def p_expressionlistopt(p):
-#   '''ExpressionListOpt : ExpressionList
-#              | epsilon'''
-#   p[0] = ["ExpressionListOpt", p[1]]
+def p_expressionlist_pure_opt(p):
+  '''ExpressionListPureOpt : ExpressionList
+             | epsilon'''
+  p[0] = ["ExpressionListPureOpt", p[1]]
 
 def p_break(p):
   '''BreakStmt : BREAK LabelOpt'''
