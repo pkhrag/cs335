@@ -202,7 +202,7 @@ def p_type_def(p):
 
 #-----------------------BLOCKS---------------------------
 def p_block(p):
-    '''Blocks : LCURL StatementList RCURL'''
+    '''Block : LCURL StatementList RCURL'''
     p[0] = ["Blocks", "{" , p[2], "}"]
 
 def p_stat_list(p):
@@ -218,36 +218,102 @@ def p_stat_rep(p):
         p[0] = ["StatementRep", p[1]]
 # -------------------------------------------------------
 
-# TODO
+
+# ----------------VARIABLE DECLARATIONS------------------
 def p_var_decl(p):
-    '''VarDecl : epsilon'''
-    p[0] = ["VarDecl", p[1]]
+    '''VarDecl : VAR VarSpec
+               | VAR LPAREN VarSpecRep RPAREN'''
+    if len(p) == 3:
+        p[0] = ["VarDecl", "var", p[2]]
+    else:
+        p[0] = ["VarDecl", "var", "(", p[3], ")"]
+
+def p_var_spec_rep(p):
+    '''VarSpecRep : VarSpecRep VarSpec SEMICOLON
+                  | epsilon'''
+    if len(p) == 4:
+        p[0] = ["VarSpecRep", p[1], p[2], ";"]
+    else:
+        p[0] = ["VarSpecRep", p[1]]
+
+def p_var_spec(p):
+    '''VarSpec : IdentifierList Type ExpressionListOpt
+               | IdentifierList ASSIGN ExpressionList'''
+    if p[2] == '=':
+        p[0] = ["VarSpec", p[1], "=", p[3]]
+    else:
+        p[0] = ["VarSpec", p[1], p[2], p[3]]
+
+def p_expr_list_opt(p):
+    '''ExpressionListOpt : ASSIGN ExpressionList
+                         | epsilon'''
+    if len(p) == 3:
+        p[0] = ["ExpressionListOpt", "=", p[2]]
+    else:
+        p[0] = ["ExpressionListOpt", p[1]]
+# -------------------------------------------------------
+
+
+# -----------------------TYPES---------------------------
+def p_type_opt(p):
+    '''TypeOpt : Type
+               | epsilon'''
+    p[0] = ["TypeOpt", p[1]]
+
+def p_type(p):
+    '''Type : TypeName
+            | TypeLit
+            | LPAREN Type RPAREN'''
+    if len(p) == 4:
+        p[0] = ["Type", "(", p[2], ")"]
+    else:
+        p[0] = ["Type", p[1]]
+
+def p_type_name(p):
+    '''TypeName : IDENTIFIER
+                | QualifiedIdent'''
+    p[0] = ["TypeName", p[1]]
+
+def p_type_lit(p):
+    '''TypeLit : ArrayType
+               | StructType
+               | PointerType'''
+    p[0] = ["TypeLit", p[1]]
+# -------------------------------------------------------
+
+
+# -------------------QUALIFIED IDENTIFIER----------------
+def p_quali_ident(p):
+    '''QualifiedIdent : PackageName DOT IDENTIFIER'''
+    p[0] = ["QualifiedIdent", p[1], ".", str(p[3])]
+# -------------------------------------------------------
+
+#TODO
+def p_array_type(p):
+    '''ArrayType : epsilon'''
+    p[0] = ["ArrayType", p[1]]
+
+#TODO
+def p_struct_type(p):
+    '''StructType : epsilon'''
+    p[0] = ["StructType", p[1]]
+
+#TODO
+def p_point_type(p):
+    '''PointerType : epsilon'''
+    p[0] = ["PointerType", p[1]]
 
 #TODO
 def p_expr(p):
     '''Expression : epsilon'''
     p[0] = ["Expression", p[1]]
 
-def p_type_opt(p):
-    '''TypeOpt : Type
-               | epsilon'''
-    p[0] = ["TypeOpt", p[1]]
-
-#TODO
-def p_type(p):
-    '''Type : epsilon'''
-    p[0] = ["Type", p[1]]
 
 
 #TODO
 def p_sign(p):
     '''Signature : epsilon'''
     p[0] = ["Signature", p[1]]
-
-#TODO
-def p_block(p):
-    '''Block : epsilon'''
-    p[0] = ["Block", p[1]]
 
 #TODO
 def p_stat(p):
