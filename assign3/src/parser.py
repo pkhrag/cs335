@@ -199,6 +199,25 @@ def p_type_def(p):
     p[0] = ["TypeDef", str(p[1]), p[2]]
 # -------------------------------------------------------
 
+
+#-----------------------BLOCKS---------------------------
+def p_block(p):
+    '''Blocks : LCURL StatementList RCURL'''
+    p[0] = ["Blocks", "{" , p[2], "}"]
+
+def p_stat_list(p):
+    '''StatementList : StatementRep'''
+    p[0] = ["StatementList", p[1]]
+
+def p_stat_rep(p):
+    '''StatementRep : StatementRep Statement SEMICOLON
+                    | epsilon'''
+    if len(p) == 4:
+        p[0] = ["StatementRep", p[1], p[2], ';']
+    else:
+        p[0] = ["StatementRep", p[1]]
+# -------------------------------------------------------
+
 # TODO
 def p_var_decl(p):
     '''VarDecl : epsilon'''
@@ -230,6 +249,10 @@ def p_block(p):
     '''Block : epsilon'''
     p[0] = ["Block", p[1]]
 
+#TODO
+def p_stat(p):
+    '''Statement : epsilon'''
+    p[0] = ["Statement", p[1]]
 
 def p_empty(p):
   '''epsilon : '''
