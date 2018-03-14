@@ -312,6 +312,11 @@ def p_expr(p):
     else:
         p[0] = ["Expression", p[1]]
 
+def p_expr_opt(p):
+    '''ExpressionOpt : Expression
+                     | epsilon'''
+    p[0] = ["ExpressionOpt", p[1]]
+
 def p_binary_op(p):
     '''BinaryOp : LOGICAL_OR
                 | LOGICAL_AND
@@ -344,8 +349,6 @@ def p_rel_op(p):
     elif p[1] == ">=":
         p[0] = ["RelOp", ">="]
 
-
-
 def p_add_mul_op(p):
     '''AddMulOp : UnaryOp
                 | OR
@@ -368,15 +371,6 @@ def p_add_mul_op(p):
         p[0] = ["AddMulOp", ">>"]
     else:
         p[0] = ["AddMulOp", p[1]]
-
-#def p_mul_op(p):
-#    '''MulOp : STAR
-#             | DIVIDE
-#             | MOD
-#             | LSHIFT
-#             | RSHIFT
-#             | AND'''
-#    p[0] = ["MulOp", str(p[1])]
 
 def p_unary_op(p):
     '''UnaryOp : PLUS
@@ -421,7 +415,6 @@ def p_element_type(p):
 # --------------------------------------------------------
 
 
-
 # ----------------- STRUCT TYPE ---------------------------
 def p_struct_type(p):
   '''StructType : STRUCT LCURL FieldDeclRep RCURL'''
@@ -447,11 +440,108 @@ def p_TagOpt(p):
 def p_Tag(p):
   ''' Tag : STRING '''
   p[0] = ["Tag", p[1]]
-
 # ---------------------------------------------------------
 
 
+# ------------------PRIMARY EXPRESSIONS--------------------
+def p_prim_expr(p):
+    '''PrimaryExpr : Operand
+                   | Conversion
+                   | PrimaryExpr Selector
+                   | PrimaryExpr Index
+                   | PrimaryExpr Slice
+                   | PrimaryExpr TypeAssertion
+                   | PrimaryExpr Arguments'''
+    if len(p) == 2:
+        p[0] = ["PrimaryExpr", p[1]]
+    else:
+        p[0] = ["PrimaryExpr", p[1], p[2]]
 
+def p_selector(p):
+    '''Selector : DOT IDENTIFIER'''
+    p[0] = ["Selector", ".", str(p[2])]
+
+def p_index(p):
+    '''Index : LSQUARE Expression RSQUARE'''
+    p[0] = ["Index", "[", p[2], "]"]
+
+def p_slice(p):
+    '''Slice : LSQUARE ExpressionOpt COLON ExpressionOpt RSQUARE
+             | LSQUARE ExpressionOpt COLON Expression COLON Expression RSQUARE'''
+    if len(p) == 6:
+        p[0] = ["Slice", "[", p[2], ":", p[4], "]"]
+    else:
+        p[0] = ["Slice", "[", p[2], ":", p[4], ":", p[6], "]"]
+
+def p_type_assert(p):
+    '''TypeAssertion : DOT LPAREN Type RPAREN'''
+    p[0] = ["TypeAssertion", ".", "(", p[3], ")"]
+
+def p_argument(p):
+    '''Arguments : LPAREN ExpressionListTypeOpt RPAREN'''
+    p[0] = ["Arguments", "(", p[2], ")"]
+
+def p_expr_list_type_opt(p):
+    '''ExpressionListTypeOpt : ExpressionList CommaOpt
+                             | Type ExpressionListCommaOpt CommaOpt'''
+    if len(p) == 3:
+        p[0] = ["ExpressionListTypeOpt", p[1], p[2]]
+    else:
+        p[0] = ["ExpressionListTypeOpt", p[1], p[2], p[3]]
+
+def p_comma_opt(p):
+    '''CommaOpt : COMMA
+                | epsilon'''
+    if p[1] == ",":
+        p[0] = ["CommaOpt", ","]
+    else:
+        p[0] = ["CommaOpt", p[1]]
+
+def p_expr_list_comma_opt(p):
+    '''ExpressionListCommaOpt : COMMA ExpressionList
+                              | epsilon'''
+    if len(p) == 3:
+        p[0] = ["ExpressionListCommaOpt", ",", p[2]]
+    else:
+        p[0] = ["ExpressionListCommaOpt", p[1]]
+# ---------------------------------------------------------
+
+
+# -----------------CONVERSIONS-----------------------------
+def p_conversion(p):
+    '''Conversion : Type LPAREN Expression CommaOpt RPAREN'''
+    p[0] = ["Conversion", p[1], "(", p[3], p[4], ")"]
+# ---------------------------------------------------------
+
+
+# ----------------------OPERAND----------------------------
+def p_operand(p):
+    '''Operand : Literal
+               | OperandName
+               | LPAREN Expression RPAREN'''
+    if len(p) == 2:
+        p[0] = ["Operand", p[1]]
+    else:
+        p[0] = ["Operand", "(". p[2], ")"]
+
+def p_literal(p):
+    '''Literal : BasicLit
+               | CompositeLit'''
+    p[0] = ["Literal", p[1]]
+
+def p_basic_lit(p):
+    '''BasicLit : INTEGER
+                | FLOAT
+                | IMAGINARY
+                | RUNE
+                | STRING'''
+    p[0] = ["BasicLit", str(p[1])]
+
+def p_operand_name(p):
+    '''OperandName : IDENTIFIER
+                   | QualifiedIdent'''
+    p[0] = ["OperandName", p[1]]
+# ---------------------------------------------------------
 
 
 #TODO
@@ -472,9 +562,10 @@ def p_stat(p):
     p[0] = ["Statement", p[1]]
 
 #TODO
-def p_prim_expr(p):
-    '''PrimaryExpr : epsilon'''
-    p[0] = ["PrimaryExpr", p[1]]
+def p_comp_lit(p):
+    '''CompositeLit : epsilon'''
+    p[0] = ["CompositeLit", p[1]]
+
 
 def p_empty(p):
   '''epsilon : '''
