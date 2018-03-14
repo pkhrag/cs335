@@ -288,25 +288,95 @@ def p_quali_ident(p):
     p[0] = ["QualifiedIdent", p[1], ".", str(p[3])]
 # -------------------------------------------------------
 
+
+#----------------------OPERATORS-------------------------
 #TODO
+def p_expr(p):
+    '''Expression : UnaryExpr
+                  | Expression BinaryOp Expression'''
+    if len(p) == 4:
+        p[0] = ["Expression", p[1], p[2], p[3]]
+    else:
+        p[0] = ["Expression", p[1]]
+
+def p_binary_op(p):
+    '''BinaryOp : LOGICAL_OR
+                | LOGICAL_AND
+                | RelOp
+                | AddOp
+                | MulOp'''
+    if p[1] == "||":
+        p[0] = ["BinaryOp", "||"]
+    elif p[1] == "&&":
+        p[0] = ["BinaryOp", "&&"]
+    else:
+        p[0] = ["BinaryOp", p[1]]
+
+def p_rel_op(p):
+    '''RelOp : EQUALS
+             | NOT_ASSIGN
+             | LESSER
+             | GREATER
+             | LESS_EQUALS
+             | MORE_EQUALS'''
+    if p[1] == "==":
+        p[0] = ["RelOp", "=="]
+    if p[1] == "!=":
+        p[0] = ["RelOp", "!="]
+    if p[1] == "<":
+        p[0] = ["RelOp", "<"]
+    if p[1] == ">":
+        p[0] = ["RelOp", ">"]
+    if p[1] == "<=":
+        p[0] = ["RelOp", "<="]
+    if p[1] == ">=":
+        p[0] = ["RelOp", ">="]
+
+    
+#TODO
+def p_unary_expr(p):
+    '''UnaryExpr : epsilon'''
+    p[0] = ["UnaryExpr", p[1]]
+# -------------------------------------------------------
+
+
+# ------------------- ARRAY TYPE -------------------------
 def p_array_type(p):
-    '''ArrayType : epsilon'''
-    p[0] = ["ArrayType", p[1]]
+    '''ArrayType : LSQUARE ArrayLength RSQUARE ElementType'''
+    p[0] = ["ArrayType", "[", p[2], "]", p[4]]
+
+def p_array_length(p):
+  ''' ArrayLength : Expresion '''
+  p[0] = ["ArrayLength", p[1]]
+
+def p_element_type(p):
+  ''' ElementType : Type '''
+  p[0] = ["ElementType", p[1]]
+
+# --------------------------------------------------------
+
+
+
 
 #TODO
+
+# ----------------- STRUCT TYPE ---------------------------
 def p_struct_type(p):
-    '''StructType : epsilon'''
-    p[0] = ["StructType", p[1]]
+    '''StructType : STRUCT LCURL FieldDeclRep RCURL'''
+    p[0] = ["StructType", "struct", "{", p[3], "}"]
+
+def p_field_decl_rep(p):
+  ''' FieldDeclRep : FieldDeclRep FieldDecl SEICOLON 
+                  | epsilon '''
+
+
+# ---------------------------------------------------------
+
 
 #TODO
 def p_point_type(p):
     '''PointerType : epsilon'''
     p[0] = ["PointerType", p[1]]
-
-#TODO
-def p_expr(p):
-    '''Expression : epsilon'''
-    p[0] = ["Expression", p[1]]
 
 
 
@@ -396,67 +466,67 @@ parser = yacc.yacc()
 
 def printResult(graph, prev, after):
 
-	word = ""
+  word = ""
 
-	if type(graph) is list:
-		for i in range (1,len(graph)):
-			if type(graph[i]) is list:
-				if word != "":
-					word = word + " " +graph[i][0]
-				else:
-					word = graph[i][0]
-			else:
-				if word != "":
-					word += " "+graph[i]
-				else:
-					word = graph[i]
-
-
-
-		if prev != "" and after != "":
-			final = prev + " " + word + " "+ after
-		elif prev == "" and after == "":
-			final = word
-		elif prev == "":
-			final = word + " " + after
-		else :
-			final = prev + " " +word
-		print final.replace(" epsilon", "")
+  if type(graph) is list:
+    for i in range (1,len(graph)):
+      if type(graph[i]) is list:
+        if word != "":
+          word = word + " " +graph[i][0]
+        else:
+          word = graph[i][0]
+      else:
+        if word != "":
+          word += " "+graph[i]
+        else:
+          word = graph[i]
 
 
 
-		for i in range(len(graph)-1,0,-1):
-			prevNew = prev
-
-			for j in range (1,i):
-				if type(graph[j]) is list:
-					if prevNew != "":
-						prevNew += " " + graph[j][0]
-					else :
-						prevNew = graph[j][0]
-				else:
-					if prevNew != "":
-						prevNew += " " + graph[j]
-					else:
-						prevNew = graph[j]
-			# print "prev " + prevNew
-			afterNew = after
-			# print "after " + afterNew
-			afterNew = printResult(graph[i],prevNew,afterNew)
-			# print "afterNew " + afterNew
-			after = afterNew
-
-
-		return after
+    if prev != "" and after != "":
+      final = prev + " " + word + " "+ after
+    elif prev == "" and after == "":
+      final = word
+    elif prev == "":
+      final = word + " " + after
+    else :
+      final = prev + " " +word
+    print final.replace(" epsilon", "")
 
 
 
-	word = graph
-	# print "after String " + word + after
+    for i in range(len(graph)-1,0,-1):
+      prevNew = prev
 
-	if word != "":
-		return word+" "+after
-	return after
+      for j in range (1,i):
+        if type(graph[j]) is list:
+          if prevNew != "":
+            prevNew += " " + graph[j][0]
+          else :
+            prevNew = graph[j][0]
+        else:
+          if prevNew != "":
+            prevNew += " " + graph[j]
+          else:
+            prevNew = graph[j]
+      # print "prev " + prevNew
+      afterNew = after
+      # print "after " + afterNew
+      afterNew = printResult(graph[i],prevNew,afterNew)
+      # print "afterNew " + afterNew
+      after = afterNew
+
+
+    return after
+
+
+
+  word = graph
+  # print "after String " + word + after
+
+  if word != "":
+    return word+" "+after
+  return after
 
 
 
