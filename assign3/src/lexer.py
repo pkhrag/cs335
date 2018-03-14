@@ -7,7 +7,7 @@ import re
 keywords = {'STRUCT', 'FUNC', 'CONST', 'TYPE', 'VAR', 'IF', 'ELSE', 'SWITCH', 'CASE',
             'DEFAULT', 'FOR', 'RANGE', 'RETURN', 'BREAK', 'CONTINUE', 'GOTO', 'PACKAGE', 'IMPORT'}
 
-operators = {'PLUS', 'UPLUS', 'UMINUS', 'UNOT', 'USTAR', 'UAND', 'MINUS', 'STAR', 'DIVIDE', 'MOD', 'ASSIGN', 'AND', 'LOGICAL_AND', 'INCR', 'DECR', 'LPAREN', 'RPAREN', 'OR', 'XOR', 'LSHIFT', 'RSHIFT', 'PLUS_ASSIGN', 'MINUS_ASSIGN', 'STAR_ASSIGN', 'DIVIDE_ASSIGN', 'MOD_ASSIGN', 'AND_ASSIGN', 'OR_ASSIGN', 'XOR_ASSIGN', 'LSHIFT_ASSIGN', 'RSHIFT_ASSIGN', 'LOGICAL_OR', 'EQUALS', 'LESSER', 'GREATER', 'NOT', 'NOT_ASSIGN', 'LESS_EQUALS', 'MORE_EQUALS', 'QUICK_ASSIGN', 'LSQUARE', 'RSQUARE', 'LCURL',
+operators = {'PLUS', 'MINUS', 'STAR', 'DIVIDE', 'MOD', 'ASSIGN', 'AND', 'LOGICAL_AND', 'INCR', 'DECR', 'LPAREN', 'RPAREN', 'OR', 'XOR', 'LSHIFT', 'RSHIFT', 'PLUS_ASSIGN', 'MINUS_ASSIGN', 'STAR_ASSIGN', 'DIVIDE_ASSIGN', 'MOD_ASSIGN', 'AND_ASSIGN', 'OR_ASSIGN', 'XOR_ASSIGN', 'LSHIFT_ASSIGN', 'RSHIFT_ASSIGN', 'LOGICAL_OR', 'EQUALS', 'LESSER', 'GREATER', 'NOT', 'NOT_ASSIGN', 'LESS_EQUALS', 'MORE_EQUALS', 'QUICK_ASSIGN', 'LSQUARE', 'RSQUARE', 'LCURL',
              'RCURL', 'COMMA', 'DOT', 'SEMICOLON', 'COLON'}
 
 reserved = {}
@@ -26,16 +26,16 @@ tokens = list(operators) + list(types) + \
 t_ignore_COMMENT = r'(/\*([^*]|\n|(\*+([^*/]|\n])))*\*+/)|(//.*)'
 t_ignore = ' \t'
 t_PLUS = r'\+'
-t_UPLUS = r'\+'
+#t_UPLUS = r'\+'
 t_MINUS = r'-'
-t_UMINUS = r'-'
+#t_UMINUS = r'-'
 t_STAR = r'\*'
-t_USTAR = r'\*'
+#t_USTAR = r'\*'
 t_DIVIDE = r'/'
 t_MOD = r'%'
 t_ASSIGN = r'='
 t_AND = r'&'
-t_UAND = r'&'
+#t_UAND = r'&'
 t_LOGICAL_AND = r'&&'
 t_INCR = r'\+\+'
 t_DECR = r'--'
@@ -60,7 +60,7 @@ t_EQUALS = r'=='
 t_LESSER = r'<'
 t_GREATER = r'>'
 t_NOT = r'!'
-t_UNOT = r'!'
+#t_UNOT = r'!'
 t_NOT_ASSIGN = r'!='
 t_LESS_EQUALS = r'<='
 t_MORE_EQUALS = r'>='
