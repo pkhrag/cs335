@@ -665,10 +665,271 @@ def p_elem(p):
 # ---------------------------------------------------------
 
 
-#TODO
-def p_stat(p):
-    '''Statement : epsilon'''
+
+
+
+
+
+
+# ---------------- STATEMENTS -----------------------
+def p_statement(p):
+    '''Statement : Declaration
+                 | LabeledStmt
+                 | SimpleStmt
+                 | ReturnStmt
+                 | BreakStmt
+                 | ContinueStmt
+                 | GotoStmt
+                 | Block
+                 | IfStmt
+                 | SwitchStmt
+                 | ForStmt '''
     p[0] = ["Statement", p[1]]
+
+<<<<<<< a89c4294ee1f9bf5d2b117cee29e8da897c474e1
+=======
+
+def p_labeled_statements(p):
+  ''' LabeledStmt : Label SEMICOLON Statement '''
+  p[0] = ["LabeledStmt", p[1], ";", p[3]]
+
+def p_label(p):
+  ''' Label : IDENTIFIER '''
+  p[0] = ["Label", p[1]]
+
+
+def p_expression_stmt(p):
+  ''' ExpressionStmt : Expression '''
+  p[0] = ["ExpressionStmt", p[1]]
+
+def p_simple_stmt(p):
+  ''' SimpleStmt : epsilon 
+                 | ExpressionStmt
+                 | IncDecStmt
+                 | Assignment
+                 | ShortVarDecl '''
+  p[0] = ["SimpleStmt", p[1]]
+
+
+def p_short_var_decl(p):
+  ''' ShortVarDecl : IdentifierList QUICK_ASSIGN ExpressionList '''
+  p[0] = ["ShortVarDecl", p[1], ":=", p[3]]
+
+
+
+def p_inc_dec(p):
+  ''' IncDecStmt : Expression INCR 
+                 | Expression DECR '''
+  if p[2] == '++':
+    p[0] = ["IncDecStmt", p[1], "++"]
+  else:
+    p[0] = ["IncDecStmt", p[1], "--"]
+
+
+def p_assignment(p):
+  ''' Assignment : ExpressionList assign_op ExpressionList'''
+  p[0] = ["Assignment", p[1], p[2], p[3]]
+
+def p_assign_op(p):
+  ''' assign_op : AddMulOp ASSIGN
+                | ASSIGN '''
+  if len(p) == 3:
+    p[0] = ["assign_op", p[1], p[2]]
+  else :
+    p[0] = ["assign_op", p[1]]
+
+
+def p_if_statement(p):
+  ''' IfStmt : IF SimpleStmtOpt Expression Block ElseOpt '''
+  p[0] = ["IfStmt", "if", p[2], p[3]. p[4], p[5]]
+
+def p_SimpleStmtOpt(p):
+  ''' SimpleStmtOpt : SimpleStmt SEMICOLON
+                    | epsilon '''
+  if len(p) == 3:
+    p[0] = ["SimpleStmtOpt", p[1], ";"]
+  else :
+    p[0] = ["SimpleStmtOpt", p[1]]
+
+def p_else_opt(p):
+  ''' ElseOpt : ELSE IfStmt
+              | ELSE Block '''
+  p[0] = ["ElseOpt", "else", p[2]]
+
+# ----------------------------------------------------------------
+
+
+
+
+
+# ----------- SWITCH STATEMENTS ---------------------------------
+
+def p_switch_statement(p):
+  ''' SwitchStmt : ExprSwitchStmt 
+                 | TypeSwitchStmt '''
+  p[0] = ["SwitchStmt", p[1]]
+
+
+def p_expr_switch_stmt(p):
+  ''' ExprSwitchStmt : SWITCH SimpleStmtOpt ExpressionOpt LCURL ExprCaseClauseRep RCURL'''
+  p[0] = ["ExpressionStmt", "switch", p[2], p[3], "{", p[5], "}"]
+
+def p_expr_case_clause_rep(p):
+  ''' ExprCaseClauseRep : ExprCaseClauseRep ExprCaseClause
+                        | epsilon'''
+  if len(p) == 3:
+    p[0] = ["ExprCaseClauseRep", p[1], p[2]]
+  else:
+    p[0] = ["ExprCaseClauseRep", p[1]]
+
+def p_expr_case_clause(p):
+  ''' ExprCaseClause : ExprSwitchCase COLON StatementList'''
+  p[0] = ["ExprCaseClause", p[1], ":", p[3]]
+
+def p_expr_switch_case(p):
+  ''' ExprSwitchCase : CASE ExpressionList
+                     | DEFAULT '''
+  if len(p) == 3:
+    p[0] = ["ExprSwitchCase", "case", p[2]]
+  else:
+    p[0] = ["ExprSwitchCase", p[1]]
+
+def p_type_switch_stmt(p):
+  ''' TypeSwitchStmt : SWITCH SimpleStmtOpt TypeSwitchGuard LCURL TypeCaseClauseOpt RCURL'''
+  p[0] = ["TypeSwitchStmt", "switch", p[2], p[3],"{", p[5], "}"]
+
+
+def p_type_switch_guard(p):
+  ''' TypeSwitchGuard : IdentifierOpt PrimaryExpr DOT LPAREN TYPE RPAREN '''
+
+  p[0] = ["TypeSwitchGuard", p[1], p[2], ".", "(", "type", ")"]
+
+def p_identifier_opt(p):
+  ''' IdentifierOpt : IDENTIFIER QUICK_ASSIGN
+                    | epsilon '''
+
+  if len(p) == 3:
+    p[0] = ["IdentifierOpt", p[1], ":="]
+  else:
+    p[0] = ["IdentifierOpt", p[1]]
+
+def p_type_case_clause_opt(p):
+  ''' TypeCaseClauseOpt : TypeCaseClauseOpt TypeCaseClause
+                        | epsilon '''
+  if len(p) == 3:
+    p[0] = ["TypeCaseClauseOpt", p[1], p[2]]
+  else:
+    p[0] = ["TypeCaseClauseOpt", p[1]]
+
+def p_type_case_clause(p):
+  ''' TypeCaseClause : TypeSwitchCase COLON StatementList'''
+  p[0] = ["TypeCaseClause", p[1], ":", p[3]]
+
+
+def p_type_switch_case(p):
+  ''' TypeSwitchCase : CASE TypeList
+                     | DEFAULT '''
+  if len(p) == 3:
+    p[0] = ["TypeSwitchCase", p[1], p[2]]
+  else:
+    p[0] = ["TypeSwitchCase", p[1]]
+
+def p_type_list(p):
+  ''' TypeList : Type TypeRep'''
+  p[0] = ["TypeList", p[1], p[2]]
+
+def p_type_rep(p):
+  ''' TypeRep : COMMA Type'''
+  p[0] = ["TypeRep", ",", p[2]]
+
+# -----------------------------------------------------------
+
+
+
+
+
+
+# --------- FOR STATEMENTS AND OTHERS (MANDAL) ---------------
+def p_for(p):
+  '''ForStmt : FOR ConditionBlockOpt Block'''
+  p[0] = ["ForStmt", "for", p[2], p[3]]
+
+def p_conditionblockopt(p):
+  '''ConditionBlockOpt : epsilon
+             | Condition
+             | ForClause
+             | RangeClause'''
+  p[0] = ["ConditionBlockOpt", p[1]]
+
+def p_condition(p):
+  '''Condition : Expression '''
+  p[0] = ["Condition", p[1]]
+
+def p_forclause(p):
+  '''ForClause : InitStmtOpt SEMICOLON ConditionOpt SEMICOLON PostStmtOpt'''
+  p[0] = ["ForClause", p[1], ";", p[3], ";", p[5]]
+
+def p_initstmtopt(p):
+  '''InitStmtOpt : epsilon
+           | SimpleStmt '''
+  p[0] = ["InitStmtOpt", p[1]]
+
+def p_conditionopt(p):
+  '''ConditionOpt : epsilon
+          | Condition '''
+  p[0] = ["ConditionOpt", p[1]]
+
+def p_poststmtopt(p):
+  '''PostStmtOpt : epsilon
+           | SimpleStmt '''
+  p[0] = ["PostStmtOpt", p[1]]
+
+def p_rageclause(p):
+  '''RangeClause : ExpressionListOpt RANGE Expression'''
+  p[0] = ["RangeClause", p[1], "range", p[3]]
+
+# def p_expressionlistopt(p):
+#   '''ExpressionListOpt : epsilon
+#              | ExpressionIdentifier'''
+#   p[0] = ["ExpressionListOpt", p[1]]
+
+def p_expressionidentifier(p):
+  '''ExpressionIdentifier : ExpressionList ASSIGN
+              | IdentifierList QUICK_ASSIGN'''
+  if p[2] == "=":
+    p[0] = ["ExpressionIdentifier", p[1], "="]
+  else:
+    p[0] = ["ExpressionIdentifier", p[1], ":="]
+
+def p_return(p):
+  '''ReturnStmt : RETURN ExpressionListOpt'''
+  p[0] = ["ReturnStmt", "return", p[2]]
+
+# def p_expressionlistopt(p):
+#   '''ExpressionListOpt : ExpressionList
+#              | epsilon'''
+#   p[0] = ["ExpressionListOpt", p[1]]
+
+def p_break(p):
+  '''BreakStmt : BREAK LabelOpt'''
+  p[0] = ["BreakStmt", "break", p[2]]
+
+def p_continue(p):
+  '''ContinueStmt : CONTINUE LabelOpt'''
+  p[0] = ["ContinueStmt", "continue", p[2]]
+
+def p_labelopt(p):
+  '''LabelOpt : Label
+        | epsilon '''
+  p[0] = ["LabelOpt", p[1]]
+
+def p_goto(p):
+  '''GotoStmt : GOTO Label '''
+  p[0] = ["GotoStmt", "goto", p[2]]
+
+
+
+# -----------------------------------------------------------
 
 
 
