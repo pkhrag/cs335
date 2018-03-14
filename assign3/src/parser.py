@@ -397,7 +397,7 @@ def p_struct_type(p):
   p[0] = ["StructType", "struct", "{", p[3], "}"]
 
 def p_field_decl_rep(p):
-  ''' FieldDeclRep : FieldDeclRep FieldDecl SEICOLON
+  ''' FieldDeclRep : FieldDeclRep FieldDecl SEMICOLON
                   | epsilon '''
   if len(p) == 4:
     p[0] = ["FieldDeclRep", p[1], p[2], ";"]
