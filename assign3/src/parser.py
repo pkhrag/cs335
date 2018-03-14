@@ -5,6 +5,12 @@ from lexer import tokens, data
 from pprint import pprint
 
 
+precedence = (
+    ('right','ASSIGN'),
+    ('left', 'PLUS', 'MINUS','AND','LOGICAL_AND','OR','XOR','LSHIFT','RSHIFT'),
+    ('left', 'STAR', 'DIVIDE','MOD',),
+)
+
 # ----------------  START --------------------------------
 def p_start(p):
     '''start : PackageClause SEMICOLON ImportDeclRep TopLevelDeclRep'''
@@ -331,19 +337,21 @@ def p_rel_op(p):
     elif p[1] == ">=":
         p[0] = ["RelOp", ">="]
 
+
+
 def p_add_op(p):
     '''AddOp : PLUS
              | MINUS
              | OR
              | XOR'''
     if p[1] == "+":
-        p[0] = ["RelOp", "+"]
+        p[0] = ["AddOp", "+"]
     elif p[1] == "-":
-        p[0] = ["RelOp", "-"]
+        p[0] = ["AddOp", "-"]
     elif p[1] == "|":
-        p[0] = ["RelOp", "|"]
+        p[0] = ["AddOp", "|"]
     elif p[1] == "^":
-        p[0] = ["RelOp", "^"]
+        p[0] = ["AddOp", "^"]
 
 def p_mul_op(p):
     '''MulOp : STAR
