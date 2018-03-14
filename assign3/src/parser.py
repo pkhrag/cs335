@@ -342,8 +342,8 @@ def p_unary_expr(p):
 
 # ------------------- ARRAY TYPE -------------------------
 def p_array_type(p):
-    '''ArrayType : LSQUARE ArrayLength RSQUARE ElementType'''
-    p[0] = ["ArrayType", "[", p[2], "]", p[4]]
+  '''ArrayType : LSQUARE ArrayLength RSQUARE ElementType'''
+  p[0] = ["ArrayType", "[", p[2], "]", p[4]]
 
 def p_array_length(p):
   ''' ArrayLength : Expresion '''
@@ -362,14 +362,12 @@ def p_element_type(p):
 
 # ----------------- STRUCT TYPE ---------------------------
 def p_struct_type(p):
-    '''StructType : STRUCT LCURL FieldDeclRep RCURL'''
-    p[0] = ["StructType", "struct", "{", p[3], "}"]
+  '''StructType : STRUCT LCURL FieldDeclRep RCURL'''
+  p[0] = ["StructType", "struct", "{", p[3], "}"]
 
 def p_field_decl_rep(p):
   ''' FieldDeclRep : FieldDeclRep FieldDecl SEICOLON 
                   | epsilon '''
-
-
 # ---------------------------------------------------------
 
 
