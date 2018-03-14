@@ -7,8 +7,17 @@ from pprint import pprint
 
 precedence = (
     ('right','ASSIGN'),
-    ('left', 'PLUS', 'MINUS','AND','LOGICAL_AND','OR','XOR','LSHIFT','RSHIFT'),
-    ('left', 'STAR', 'DIVIDE','MOD',),
+    ('left', 'LOGICAL_OR'),
+    ('left', 'LOGICAL_AND'),
+    ('left', 'OR'),
+    ('left', 'XOR'),
+    ('left', 'AND'),
+    ('left', 'EQUALS', 'NOT_ASSIGN'),
+    ('left', 'LESSER', 'GREATER','LESS_EQUALS','MORE_EQUALS'),
+    ('left', 'LSHIFT', 'RSHIFT'),
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'STAR', 'DIVIDE','MOD'),
+    ('left', 'UPLUS', 'UMINUS', 'UNOT', 'USTAR', 'UAND')
 )
 
 # ----------------  START --------------------------------
@@ -359,17 +368,15 @@ def p_mul_op(p):
              | MOD
              | LSHIFT
              | RSHIFT
-             | AND
-             | AND_XOR'''
+             | AND'''
     p[0] = ["MulOp", str(p[1])]
 
 def p_unary_op(p):
-    '''UnaryOp : PLUS
-               | MINUS
-               | NOT
-               | XOR
-               | STAR
-               | AND '''
+    '''UnaryOp : UPLUS
+               | UMINUS
+               | UNOT
+               | USTAR
+               | UAND '''
     p[0] = ["UnaryOp", str(p[1])]
 
 def p_unary_expr(p):
