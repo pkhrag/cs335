@@ -380,7 +380,7 @@ def p_array_type(p):
   p[0] = ["ArrayType", "[", p[2], "]", p[4]]
 
 def p_array_length(p):
-  ''' ArrayLength : Expresion '''
+  ''' ArrayLength : Expression '''
   p[0] = ["ArrayLength", p[1]]
 
 def p_element_type(p):
@@ -391,9 +391,6 @@ def p_element_type(p):
 
 
 
-
-#TODO
-
 # ----------------- STRUCT TYPE ---------------------------
 def p_struct_type(p):
   '''StructType : STRUCT LCURL FieldDeclRep RCURL'''
@@ -402,7 +399,28 @@ def p_struct_type(p):
 def p_field_decl_rep(p):
   ''' FieldDeclRep : FieldDeclRep FieldDecl SEICOLON
                   | epsilon '''
+  if len(p) == 4:
+    p[0] = ["FieldDeclRep", p[1], p[2], ";"]
+  else:
+    p[0] = ["FieldDeclRep", p[1]]
+
+def p_field_decl(p):
+  ''' FieldDecl : IdentifierList Type TagOpt'''
+  p[0] = ["FieldDecl", p[1], p[2], p[3]]
+
+def p_TagOpt(p):
+  ''' TagOpt : Tag
+             | epsilon '''
+  p[0] = ["TagOpt", p[1]]
+
+def p_Tag(p):
+  ''' Tag : STRING '''
+  p[0] = ["Tag", p[1]]
+
 # ---------------------------------------------------------
+
+
+
 
 
 #TODO
