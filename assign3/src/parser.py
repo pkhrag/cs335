@@ -290,7 +290,6 @@ def p_quali_ident(p):
 
 
 #----------------------OPERATORS-------------------------
-#TODO
 def p_expr(p):
     '''Expression : UnaryExpr
                   | Expression BinaryOp Expression'''
@@ -321,22 +320,57 @@ def p_rel_op(p):
              | MORE_EQUALS'''
     if p[1] == "==":
         p[0] = ["RelOp", "=="]
-    if p[1] == "!=":
+    elif p[1] == "!=":
         p[0] = ["RelOp", "!="]
-    if p[1] == "<":
+    elif p[1] == "<":
         p[0] = ["RelOp", "<"]
-    if p[1] == ">":
+    elif p[1] == ">":
         p[0] = ["RelOp", ">"]
-    if p[1] == "<=":
+    elif p[1] == "<=":
         p[0] = ["RelOp", "<="]
-    if p[1] == ">=":
+    elif p[1] == ">=":
         p[0] = ["RelOp", ">="]
 
-    
-#TODO
+def p_add_op(p):
+    '''AddOp : PLUS
+             | MINUS
+             | OR
+             | XOR'''
+    if p[1] == "+":
+        p[0] = ["RelOp", "+"]
+    elif p[1] == "-":
+        p[0] = ["RelOp", "-"]
+    elif p[1] == "|":
+        p[0] = ["RelOp", "|"]
+    elif p[1] == "^":
+        p[0] = ["RelOp", "^"]
+
+def p_mul_op(p):
+    '''MulOp : STAR
+             | DIVIDE
+             | MOD
+             | LSHIFT
+             | RSHIFT
+             | AND
+             | AND_XOR'''
+    p[0] = ["MulOp", str(p[1])]
+
+def p_unary_op(p):
+    '''UnaryOp : PLUS
+               | MINUS
+               | NOT
+               | XOR
+               | STAR
+               | AND '''
+    p[0] = ["UnaryOp", str(p[1])]
+
 def p_unary_expr(p):
-    '''UnaryExpr : epsilon'''
-    p[0] = ["UnaryExpr", p[1]]
+    '''UnaryExpr : PrimaryExpr
+                 | UnaryOp UnaryExpr'''
+    if len(p) == 2:
+        p[0] = ["UnaryExpr", p[1]]
+    else:
+        p[0] = ["UnaryExpr", p[1], p[2]]
 # -------------------------------------------------------
 
 
@@ -366,7 +400,7 @@ def p_struct_type(p):
   p[0] = ["StructType", "struct", "{", p[3], "}"]
 
 def p_field_decl_rep(p):
-  ''' FieldDeclRep : FieldDeclRep FieldDecl SEICOLON 
+  ''' FieldDeclRep : FieldDeclRep FieldDecl SEICOLON
                   | epsilon '''
 # ---------------------------------------------------------
 
@@ -387,6 +421,11 @@ def p_sign(p):
 def p_stat(p):
     '''Statement : epsilon'''
     p[0] = ["Statement", p[1]]
+
+#TODO
+def p_prim_expr(p):
+    '''PrimaryExpr : epsilon'''
+    p[0] = ["PrimaryExpr", p[1]]
 
 def p_empty(p):
   '''epsilon : '''
