@@ -37,9 +37,19 @@ def p_type(p):
         p[0] = ["Type", p[1]]
 
 def p_type_name(p):
-    '''TypeName : IDENTIFIER
+    '''TypeName : TypeToken
                 | QualifiedIdent'''
     p[0] = ["TypeName", p[1]]
+
+def p_type_token(p):
+    '''TypeToken : INT_T
+                 | FLOAT_T
+                 | UINT_T
+                 | COMPLEX_T
+                 | RUNE_T
+                 | BOOL_T
+                 | STRING_T'''
+    p[0] = ["TypeToken", p[1]]
 
 def p_type_lit(p):
     '''TypeLit : ArrayType
@@ -357,12 +367,14 @@ def p_operand(p):
         p[0] = ["Operand", "(". p[2], ")"]
 
 def p_literal(p):
-    '''Literal : BasicLit'''
-               #| CompositeLit'''
+    '''Literal : BasicLit
+               | CompositeLit'''
     p[0] = ["Literal", p[1]]
 
 def p_basic_lit(p):
     '''BasicLit : INTEGER
+                | OCTAL
+                | HEX
                 | FLOAT
                 | IMAGINARY
                 | RUNE
@@ -640,8 +652,8 @@ def p_simple_stmt(p):
 
 
 def p_labeled_statements(p):
-  ''' LabeledStmt : Label SEMICOLON Statement '''
-  p[0] = ["LabeledStmt", p[1], ";", p[3]]
+  ''' LabeledStmt : Label COLON Statement '''
+  p[0] = ["LabeledStmt", p[1], ":", p[3]]
 
 def p_label(p):
   ''' Label : IDENTIFIER '''

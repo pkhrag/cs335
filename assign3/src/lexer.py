@@ -5,9 +5,9 @@ import ply.lex as lex
 import re
 
 keywords = {'STRUCT', 'FUNC', 'CONST', 'TYPE', 'VAR', 'IF', 'ELSE', 'SWITCH', 'CASE',
-            'DEFAULT', 'FOR', 'RANGE', 'RETURN', 'BREAK', 'CONTINUE', 'GOTO', 'PACKAGE', 'IMPORT'}
+            'DEFAULT', 'FOR', 'RANGE', 'RETURN', 'BREAK', 'CONTINUE', 'GOTO', 'PACKAGE', 'IMPORT', 'INT_T', 'FLOAT_T', 'UINT_T', 'COMPLEX_T', 'RUNE_T', 'BOOL_T', 'STRING_T'}
 
-operators = {'PLUS', 'MINUS', 'STAR', 'DIVIDE', 'MOD', 'ASSIGN', 'AND', 'LOGICAL_AND', 'INCR', 'DECR', 'LPAREN', 'RPAREN', 'OR', 'XOR', 'LSHIFT', 'RSHIFT', 'PLUS_ASSIGN', 'MINUS_ASSIGN', 'STAR_ASSIGN', 'DIVIDE_ASSIGN', 'MOD_ASSIGN', 'AND_ASSIGN', 'OR_ASSIGN', 'XOR_ASSIGN', 'LSHIFT_ASSIGN', 'RSHIFT_ASSIGN', 'LOGICAL_OR', 'EQUALS', 'LESSER', 'GREATER', 'NOT', 'NOT_ASSIGN', 'LESS_EQUALS', 'MORE_EQUALS', 'QUICK_ASSIGN', 'LSQUARE', 'RSQUARE', 'LCURL',
+operators = {'PLUS', 'MINUS', 'STAR', 'DIVIDE', 'MOD', 'ASSIGN', 'AND', 'LOGICAL_AND', 'INCR', 'DECR', 'LPAREN', 'RPAREN', 'OR', 'XOR', 'LSHIFT', 'RSHIFT', 'LOGICAL_OR', 'EQUALS', 'LESSER', 'GREATER', 'NOT', 'NOT_ASSIGN', 'LESS_EQUALS', 'MORE_EQUALS', 'QUICK_ASSIGN', 'LSQUARE', 'RSQUARE', 'LCURL',
              'RCURL', 'COMMA', 'DOT', 'SEMICOLON', 'COLON'}
 
 reserved = {}
@@ -45,16 +45,6 @@ t_OR = r'\|'
 t_XOR = r'\^'
 t_LSHIFT = r'<<'
 t_RSHIFT = r'>>'
-t_PLUS_ASSIGN = r'\+='
-t_MINUS_ASSIGN = r'-='
-t_STAR_ASSIGN = r'\*='
-t_DIVIDE_ASSIGN = r'/='
-t_MOD_ASSIGN = r'%='
-t_AND_ASSIGN = r'&='
-t_OR_ASSIGN = r'\|='
-t_XOR_ASSIGN = r'\^='
-t_LSHIFT_ASSIGN = r'<<='
-t_RSHIFT_ASSIGN = r'>>='
 t_LOGICAL_OR = r'\|\|'
 t_EQUALS = r'=='
 t_LESSER = r'<'
