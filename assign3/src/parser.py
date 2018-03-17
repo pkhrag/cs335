@@ -252,7 +252,7 @@ def p_expr_rep(p):
     '''ExpressionRep : ExpressionRep COMMA Expression
                      | epsilon'''
     if len(p) == 4:
-        p[0] = ["ExpressionRep", p[1], ',', p[2]]
+        p[0] = ["ExpressionRep", p[1], ',', p[3]]
     else:
         p[0] = ["ExpressionRep", p[1]]
 # -------------------------------------------------------
@@ -330,7 +330,7 @@ def p_expr_list_opt(p):
 
 # ----------------SHORT VARIABLE DECLARATIONS-------------
 def p_short_var_decl(p):
-  ''' ShortVarDecl : IdentifierList QUICK_ASSIGN ExpressionList '''
+  ''' ShortVarDecl : IDENTIFIER QUICK_ASSIGN Expression '''
   p[0] = ["ShortVarDecl", p[1], ":=", p[3]]
 # -------------------------------------------------------
 
@@ -367,8 +367,7 @@ def p_operand(p):
         p[0] = ["Operand", "(". p[2], ")"]
 
 def p_literal(p):
-    '''Literal : BasicLit
-               | CompositeLit'''
+    '''Literal : BasicLit'''
     p[0] = ["Literal", p[1]]
 
 def p_basic_lit(p):
@@ -389,66 +388,9 @@ def p_operand_name(p):
 
 # -------------------QUALIFIED IDENTIFIER----------------
 def p_quali_ident(p):
-    '''QualifiedIdent : PackageName DOT IDENTIFIER'''
-    p[0] = ["QualifiedIdent", p[1], ".", str(p[3])]
+    '''QualifiedIdent : IDENTIFIER DOT PackageName'''
+    p[0] = ["QualifiedIdent", p[1], ".", p[3]]
 # -------------------------------------------------------
-
-
-# -----------------COMPOSITE LITERALS----------------------
-def p_comp_lit(p):
-    '''CompositeLit : LiteralType LiteralValue'''
-    p[0] = ["CompositeLit", p[1], p[2]]
-
-def p_lit_type(p):
-    '''LiteralType : ArrayType
-                   | ElementType
-                   | TypeName'''
-    p[0] = ["LiteralType", p[1]]
-
-def p_lit_val(p):
-    '''LiteralValue : LCURL ElementListOpt RCURL'''
-    p[0] = ["LiteralValue", "{", p[2], "}"]
-
-def p_elem_list_comma_opt(p):
-    '''ElementListOpt : ElementList
-                           | epsilon'''
-    p[0] = ["ElementListOpt", p[1]]
-
-def p_elem_list(p):
-    '''ElementList : KeyedElement KeyedElementCommaRep'''
-    p[0] = ["ElementList", p[1], p[2]]
-
-def p_key_elem_comma_rep(p):
-    '''KeyedElementCommaRep : KeyedElementCommaRep COMMA KeyedElement
-                            | epsilon'''
-    if len(p) == 4:
-        p[0] = ["KeyedElementCommaRep", p[1], ",", p[3]]
-    else:
-        p[0] = ["KeyedElementCommaRep", p[1]]
-
-def p_key_elem(p):
-    '''KeyedElement : Key COLON Element
-                    | Element'''
-    if len(p) == 4:
-        p[0] = ["KeyedElement", p[1], ":", p[3]]
-    else:
-        p[0] = ["KeyedElement", p[1]]
-
-def p_key(p):
-    '''Key : FieldName
-           | Expression
-           | LiteralValue'''
-    p[0] = ["Key", p[1]]
-
-def p_field_name(p):
-    '''FieldName : IDENTIFIER'''
-    p[0] = ["FieldName", p[1]]
-
-def p_elem(p):
-    '''Element : Expression
-               | LiteralValue'''
-    p[0] = ["Element", p[1]]
-# ---------------------------------------------------------
 
 
 # ------------------PRIMARY EXPRESSIONS--------------------
@@ -647,7 +589,7 @@ def p_simple_stmt(p):
                  | ExpressionStmt
                  | IncDecStmt
                  | Assignment
-                 | ShortVarDecl '''
+		 | ShortVarDecl'''
   p[0] = ["SimpleStmt", p[1]]
 
 
@@ -674,16 +616,22 @@ def p_inc_dec(p):
 
 
 def p_assignment(p):
-  ''' Assignment : ExpressionList assign_op ExpressionList'''
+  ''' Assignment : ExpressionList AssignOp ExpressionList'''
   p[0] = ["Assignment", p[1], p[2], p[3]]
 
-def p_assign_op(p):
-  ''' assign_op : AddMulOp ASSIGN
-                | ASSIGN '''
-  if len(p) == 3:
-    p[0] = ["assign_op", p[1], p[2]]
-  else :
-    p[0] = ["assign_op", p[1]]
+def p_AssignOp(p):
+  ''' AssignOp : PLUS_ASSIGN
+               | MINUS_ASSIGN
+               | STAR_ASSIGN
+               | DIVIDE_ASSIGN
+               | MOD_ASSIGN
+               | AND_ASSIGN
+               | OR_ASSIGN
+               | XOR_ASSIGN
+               | LSHIFT_ASSIGN
+               | RSHIFT_ASSIGN
+               | ASSIGN '''
+  p[0] = ["AssignOp", p[1]]
 
 
 def p_if_statement(p):
@@ -858,8 +806,7 @@ def p_expression_ident_listopt(p):
   p[0] = ["ExpressionIdentListOpt", p[1]]
 
 def p_expressionidentifier(p):
-  '''ExpressionIdentifier : ExpressionList ASSIGN
-              | IdentifierList QUICK_ASSIGN'''
+  '''ExpressionIdentifier : ExpressionList ASSIGN'''
   if p[2] == "=":
     p[0] = ["ExpressionIdentifier", p[1], "="]
   else:
