@@ -986,24 +986,44 @@ parser = yacc.yacc()
 
 
 
+
+
+nonTerminals = []
+
+def toFindNonTerminals(graph):
+  if type(graph) is list:
+    nonTerminals.append(graph[0])
+    for i in range(1,len(graph),1):
+      toFindNonTerminals(graph[i])
+
 def printResult(graph, prev, after):
 
   word = ""
 
   if type(graph) is list:
-    for i in range (1,len(graph)):
+
+    lastFound = 0
+    for i in range (len(graph)-1,0,-1):
       if type(graph[i]) is list:
         if word != "":
-          word = word + " " +graph[i][0]
+          if lastFound==1:
+            word = graph[i][0]+ " " + word
+          else:
+            lastFound = 1
+            word =  "<b style='color:red'>" + graph[i][0]+ "</b>" + " " + word
         else:
-          word = graph[i][0]
+          if lastFound == 1:
+            word = graph[i][0]
+          else:
+            lastFound = 1
+            word = "<b style='color:red'>" + graph[i][0] + "</b>"
       else:
         if word != "":
-          word += " "+graph[i]
+          word =  graph[i] + " " + word
         else:
           word = graph[i]
 
-
+    # word = '<span style="color:red">' + word + "</span>"
 
     if prev != "" and after != "":
       final = prev + " " + word + " "+ after
@@ -1013,7 +1033,21 @@ def printResult(graph, prev, after):
       final = word + " " + after
     else :
       final = prev + " " +word
-    print final.replace(" epsilon", "")
+
+    final = (final.replace(" epsilon", ""))
+    toFindNT = final.split()
+    # print toFindNT
+
+
+    # print lastFound
+    if lastFound == 0:
+      for kk in range(len(toFindNT)-1,-1,-1):
+        if toFindNT[kk] in nonTerminals:
+          lastFound = 1
+          toFindNT[kk] = "<b style='color:red'>" + toFindNT[kk] + "</b>"
+          break
+    final = ' '.join(toFindNT)
+    print  final + "<br/>"
 
 
 
@@ -1054,7 +1088,6 @@ def printResult(graph, prev, after):
 
 
 
-
 try:
   s = data
   print(s)
@@ -1064,6 +1097,17 @@ if not s:
   print("bas kar")
 result = parser.parse(s)
 
-print "start"
+toFindNonTerminals(result)
+# print nonTTerminals
+
+# print nonTerminals
+
+sys.stdout = open("answer.html", "w+")
+print "<!DOCTYPE html>\
+<html><head>"
+print "<b style='color:red'>Start</b><br>"
+
+
 printResult(result, "" , "")
+print "</head></html>"
 

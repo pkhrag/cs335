@@ -1,0 +1,64 @@
+<!DOCTYPE html><html><head>
+<b style='color:red'>Start</b><br>
+<b style='color:red'>SourceFile</b><br/>
+PackageClause ; ImportDeclRep <b style='color:red'>TopLevelDeclRep</b><br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep <b style='color:red'>TopLevelDecl</b> ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep <b style='color:red'>FunctionDecl</b> ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName <b style='color:red'>Function</b> ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature <b style='color:red'>FunctionBody</b> ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature <b style='color:red'>Blocks</b> ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { <b style='color:red'>StatementList</b> } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { <b style='color:red'>StatementRep</b> } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep <b style='color:red'>Statement</b> ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep <b style='color:red'>Declaration</b> ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep <b style='color:red'>VarDecl</b> ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var <b style='color:red'>VarSpec</b> ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var IdentifierList Type <b style='color:red'>ExpressionListOpt</b> ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var IdentifierList Type = <b style='color:red'>ExpressionList</b> ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var IdentifierList Type = Expression <b style='color:red'>ExpressionRep</b> ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var IdentifierList Type = <b style='color:red'>Expression</b> ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var IdentifierList Type = <b style='color:red'>UnaryExpr</b> ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var IdentifierList Type = <b style='color:red'>PrimaryExpr</b> ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var IdentifierList Type = <b style='color:red'>Operand</b> ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var IdentifierList Type = <b style='color:red'>Literal</b> ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var IdentifierList Type = <b style='color:red'>BasicLit</b> ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var IdentifierList <b style='color:red'>Type</b> = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var IdentifierList <b style='color:red'>TypeName</b> = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var IdentifierList <b style='color:red'>TypeToken</b> = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var <b style='color:red'>IdentifierList</b> int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { StatementRep var A <b style='color:red'>IdentifierRep</b> int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Signature { <b style='color:red'>StatementRep</b> var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName <b style='color:red'>Signature</b> { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName Parameters <b style='color:red'>ResultOpt</b> { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName <b style='color:red'>Parameters</b> { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func FunctionName ( <b style='color:red'>ParameterListOpt</b> ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep func <b style='color:red'>FunctionName</b> ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep <b style='color:red'>TopLevelDeclRep</b> func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep <b style='color:red'>TopLevelDecl</b> ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep <b style='color:red'>Declaration</b> ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep <b style='color:red'>TypeDecl</b> ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep type <b style='color:red'>TypeSpec</b> ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep type <b style='color:red'>TypeDef</b> ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep type Vertex <b style='color:red'>Type</b> ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep type Vertex <b style='color:red'>TypeLit</b> ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep type Vertex <b style='color:red'>StructType</b> ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep type Vertex struct { <b style='color:red'>FieldDeclRep</b> } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep type Vertex struct { FieldDeclRep <b style='color:red'>FieldDecl</b> ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep type Vertex struct { FieldDeclRep IdentifierList Type <b style='color:red'>TagOpt</b> ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep type Vertex struct { FieldDeclRep IdentifierList <b style='color:red'>Type</b> ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep type Vertex struct { FieldDeclRep IdentifierList <b style='color:red'>TypeName</b> ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep type Vertex struct { FieldDeclRep IdentifierList <b style='color:red'>TypeToken</b> ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep type Vertex struct { FieldDeclRep <b style='color:red'>IdentifierList</b> int_t ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep type Vertex struct { FieldDeclRep A <b style='color:red'>IdentifierRep</b> int_t ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep TopLevelDeclRep type Vertex struct { <b style='color:red'>FieldDeclRep</b> A int_t ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep <b style='color:red'>TopLevelDeclRep</b> type Vertex struct { A int_t ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; <b style='color:red'>ImportDeclRep</b> type Vertex struct { A int_t ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep <b style='color:red'>ImportDecl</b> ; type Vertex struct { A int_t ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep import <b style='color:red'>ImportSpec</b> ; type Vertex struct { A int_t ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep import PackageNameDotOpt <b style='color:red'>ImportPath</b> ; type Vertex struct { A int_t ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; ImportDeclRep import <b style='color:red'>PackageNameDotOpt</b> fmt ; type Vertex struct { A int_t ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+PackageClause ; <b style='color:red'>ImportDeclRep</b> import fmt ; type Vertex struct { A int_t ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+<b style='color:red'>PackageClause</b> ; import fmt ; type Vertex struct { A int_t ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+package <b style='color:red'>PackageName</b> ; import fmt ; type Vertex struct { A int_t ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+package main ; import fmt ; type Vertex struct { A int_t ; } ; func main ( ) { var A int_t = 2 ; } ;<br/>
+</head></html>
