@@ -238,13 +238,13 @@ def p_type_expr_list(p):
 
 def p_identifier_list(p):
     '''IdentifierList : IDENTIFIER IdentifierRep'''
-    p[0] = ["IdentifierList", str(p[1]), p[2]]
+    p[0] = ["IdentifierList", p[1], p[2]]
 
 def p_identifier_rep(p):
     '''IdentifierRep : IdentifierRep COMMA IDENTIFIER
                      | epsilon'''
     if len(p) == 4:
-        p[0] = ["IdentifierRep", p[1], ",", str(p[3])]
+        p[0] = ["IdentifierRep", p[1], ",", p[3]]
     else:
         p[0] = ["IdentifierRep", p[1]]
 
@@ -286,14 +286,14 @@ def p_type_spec(p):
 
 def p_alias_decl(p):
     '''AliasDecl : IDENTIFIER ASSIGN Type'''
-    p[0] = ["AliasDecl", str(p[1]), '=', p[3]]
+    p[0] = ["AliasDecl", p[1], '=', p[3]]
 # -------------------------------------------------------
 
 
 # -------------------TYPE DEFINITIONS--------------------
 def p_type_def(p):
     '''TypeDef : IDENTIFIER Type'''
-    p[0] = ["TypeDef", str(p[1]), p[2]]
+    p[0] = ["TypeDef", p[1], p[2]]
 # -------------------------------------------------------
 
 
@@ -348,7 +348,7 @@ def p_func_decl(p):
 
 def p_func_name(p):
     '''FunctionName : IDENTIFIER'''
-    p[0] = ["FunctionName", str(p[1])]
+    p[0] = ["FunctionName", p[1]]
 
 def p_func(p):
     '''Function : Signature FunctionBody'''
@@ -383,7 +383,7 @@ def p_basic_lit(p):
                 | IMAGINARY
                 | RUNE
                 | STRING'''
-    p[0] = ["BasicLit", str(p[1])]
+    p[0] = ["BasicLit",str(p[1])]
 
 def p_operand_name(p):
     '''OperandName : IDENTIFIER'''
@@ -394,7 +394,7 @@ def p_operand_name(p):
 # -------------------QUALIFIED IDENTIFIER----------------
 def p_quali_ident(p):
     '''QualifiedIdent : IDENTIFIER DOT TypeName'''
-    p[0] = ["QualifiedIdent", p[1], ".", str(p[3])]
+    p[0] = ["QualifiedIdent", p[1], ".", p[3]]
 # -------------------------------------------------------
 
 
@@ -471,7 +471,7 @@ def p_prim_expr(p):
 
 def p_selector(p):
     '''Selector : DOT IDENTIFIER'''
-    p[0] = ["Selector", ".", str(p[2])]
+    p[0] = ["Selector", ".", p[2]]
 
 def p_index(p):
     '''Index : LSQUARE Expression RSQUARE'''
@@ -495,7 +495,6 @@ def p_argument(p):
 
 def p_expr_list_type_opt(p):
     '''ExpressionListTypeOpt : ExpressionList
-                             | Type ExpressionListCommaOpt
                              | epsilon'''
     if len(p) == 3:
         p[0] = ["ExpressionListTypeOpt", p[1], p[2]]
@@ -705,8 +704,8 @@ def p_AssignOp(p):
 
 
 def p_if_statement(p):
-  ''' IfStmt : IF SimpleStmtOpt Expression Block ElseOpt '''
-  p[0] = ["IfStmt", "if", p[2], p[3]. p[4], p[5]]
+  ''' IfStmt : IF Expression Block ElseOpt '''
+  p[0] = ["IfStmt", "if", p[2], p[3], p[4]]
 
 def p_SimpleStmtOpt(p):
   ''' SimpleStmtOpt : SimpleStmt SEMICOLON
@@ -1056,24 +1055,42 @@ parser = yacc.yacc()
 
 
 
+nonTerminals = []
+
+def toFindNonTerminals(graph):
+  if type(graph) is list:
+    nonTerminals.append(graph[0])
+    for i in range(1,len(graph),1):
+      toFindNonTerminals(graph[i])
+
 def printResult(graph, prev, after):
 
   word = ""
 
   if type(graph) is list:
-    for i in range (1,len(graph)):
+
+    lastFound = 0
+    for i in range (len(graph)-1,0,-1):
       if type(graph[i]) is list:
         if word != "":
-          word = word + " " +graph[i][0]
+          if lastFound==1:
+            word = graph[i][0]+ " " + word
+          else:
+            lastFound = 1
+            word =  "<b style='color:red'>" + graph[i][0]+ "</b>" + " " + word
         else:
-          word = graph[i][0]
+          if lastFound == 1:
+            word = graph[i][0]
+          else:
+            lastFound = 1
+            word = "<b style='color:red'>" + graph[i][0] + "</b>"
       else:
         if word != "":
-          word += " "+graph[i]
+          word =  graph[i] + " " + word
         else:
           word = graph[i]
 
-
+    # word = '<span style="color:red">' + word + "</span>"
 
     if prev != "" and after != "":
       final = prev + " " + word + " "+ after
@@ -1083,7 +1100,21 @@ def printResult(graph, prev, after):
       final = word + " " + after
     else :
       final = prev + " " +word
-    print final.replace(" epsilon", "")
+
+    final = (final.replace(" epsilon", ""))
+    toFindNT = final.split()
+    # print toFindNT
+
+
+    # print lastFound
+    if lastFound == 0:
+      for kk in range(len(toFindNT)-1,-1,-1):
+        if toFindNT[kk] in nonTerminals:
+          lastFound = 1
+          toFindNT[kk] = "<b style='color:red'>" + toFindNT[kk] + "</b>"
+          break
+    final = ' '.join(toFindNT)
+    print  final + "<br/>"
 
 
 
@@ -1124,7 +1155,6 @@ def printResult(graph, prev, after):
 
 
 
-
 try:
   s = data
   print(s)
@@ -1134,6 +1164,16 @@ if not s:
   print("bas kar")
 result = parser.parse(s)
 
-print "start"
-printResult(result, "" , "")
+toFindNonTerminals(result)
+# print nonTTerminals
 
+# print nonTerminals
+
+sys.stdout = open("answer.html", "w+")
+print "<!DOCTYPE html>\
+<html><head>"
+print "<b style='color:red'>Start</b><br>"
+
+
+printResult(result, "" , "")
+print "</head></html>"
