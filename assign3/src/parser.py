@@ -48,8 +48,12 @@ def p_type_token(p):
                  | COMPLEX_T
                  | RUNE_T
                  | BOOL_T
-                 | STRING_T'''
-    p[0] = ["TypeToken", p[1]]
+                 | STRING_T
+                 | TYPE IDENTIFIER'''
+    if len(p) == 2:
+        p[0] = ["TypeToken", p[1]]
+    else:
+        p[0] = ["TypeToken", p[1], p[2]]
 
 def p_type_lit(p):
     '''TypeLit : ArrayType
@@ -234,13 +238,13 @@ def p_type_expr_list(p):
 
 def p_identifier_list(p):
     '''IdentifierList : IDENTIFIER IdentifierRep'''
-    p[0] = ["IdentifierList", str(p[1]), p[2]]
+    p[0] = ["IdentifierList", p[1], p[2]]
 
 def p_identifier_rep(p):
     '''IdentifierRep : IdentifierRep COMMA IDENTIFIER
                      | epsilon'''
     if len(p) == 4:
-        p[0] = ["IdentifierRep", p[1], ",", str(p[3])]
+        p[0] = ["IdentifierRep", p[1], ",", p[3]]
     else:
         p[0] = ["IdentifierRep", p[1]]
 
@@ -282,14 +286,14 @@ def p_type_spec(p):
 
 def p_alias_decl(p):
     '''AliasDecl : IDENTIFIER ASSIGN Type'''
-    p[0] = ["AliasDecl", str(p[1]), '=', p[3]]
+    p[0] = ["AliasDecl", p[1], '=', p[3]]
 # -------------------------------------------------------
 
 
 # -------------------TYPE DEFINITIONS--------------------
 def p_type_def(p):
     '''TypeDef : IDENTIFIER Type'''
-    p[0] = ["TypeDef", str(p[1]), p[2]]
+    p[0] = ["TypeDef", p[1], p[2]]
 # -------------------------------------------------------
 
 
@@ -344,7 +348,7 @@ def p_func_decl(p):
 
 def p_func_name(p):
     '''FunctionName : IDENTIFIER'''
-    p[0] = ["FunctionName", str(p[1])]
+    p[0] = ["FunctionName", p[1]]
 
 def p_func(p):
     '''Function : Signature FunctionBody'''
@@ -368,6 +372,7 @@ def p_operand(p):
 
 def p_literal(p):
     '''Literal : BasicLit'''
+               #| CompositeLit'''
     p[0] = ["Literal", p[1]]
 
 def p_basic_lit(p):
@@ -378,7 +383,7 @@ def p_basic_lit(p):
                 | IMAGINARY
                 | RUNE
                 | STRING'''
-    p[0] = ["BasicLit", str(p[1])]
+    p[0] = ["BasicLit",str(p[1])]
 
 def p_operand_name(p):
     '''OperandName : IDENTIFIER'''
@@ -388,9 +393,66 @@ def p_operand_name(p):
 
 # -------------------QUALIFIED IDENTIFIER----------------
 def p_quali_ident(p):
-    '''QualifiedIdent : IDENTIFIER DOT PackageName'''
+    '''QualifiedIdent : IDENTIFIER DOT TypeName'''
     p[0] = ["QualifiedIdent", p[1], ".", p[3]]
 # -------------------------------------------------------
+
+
+# -----------------COMPOSITE LITERALS----------------------
+def p_comp_lit(p):
+    '''CompositeLit : LiteralType LiteralValue'''
+    p[0] = ["CompositeLit", p[1], p[2]]
+
+def p_lit_type(p):
+    '''LiteralType : ArrayType
+                   | ElementType
+                   | TypeName'''
+    p[0] = ["LiteralType", p[1]]
+
+def p_lit_val(p):
+    '''LiteralValue : LCURL ElementListOpt RCURL'''
+    p[0] = ["LiteralValue", "{", p[2], "}"]
+
+def p_elem_list_comma_opt(p):
+    '''ElementListOpt : ElementList
+                           | epsilon'''
+    p[0] = ["ElementListOpt", p[1]]
+
+def p_elem_list(p):
+    '''ElementList : KeyedElement KeyedElementCommaRep'''
+    p[0] = ["ElementList", p[1], p[2]]
+
+def p_key_elem_comma_rep(p):
+    '''KeyedElementCommaRep : KeyedElementCommaRep COMMA KeyedElement
+                            | epsilon'''
+    if len(p) == 4:
+        p[0] = ["KeyedElementCommaRep", p[1], ",", p[3]]
+    else:
+        p[0] = ["KeyedElementCommaRep", p[1]]
+
+def p_key_elem(p):
+    '''KeyedElement : Key COLON Element
+                    | Element'''
+    if len(p) == 4:
+        p[0] = ["KeyedElement", p[1], ":", p[3]]
+    else:
+        p[0] = ["KeyedElement", p[1]]
+
+def p_key(p):
+    '''Key : FieldName
+           | Expression
+           | LiteralValue'''
+    p[0] = ["Key", p[1]]
+
+def p_field_name(p):
+    '''FieldName : IDENTIFIER'''
+    p[0] = ["FieldName", p[1]]
+
+def p_elem(p):
+    '''Element : Expression
+               | LiteralValue'''
+    p[0] = ["Element", p[1]]
+# ---------------------------------------------------------
 
 
 # ------------------PRIMARY EXPRESSIONS--------------------
@@ -409,7 +471,7 @@ def p_prim_expr(p):
 
 def p_selector(p):
     '''Selector : DOT IDENTIFIER'''
-    p[0] = ["Selector", ".", str(p[2])]
+    p[0] = ["Selector", ".", p[2]]
 
 def p_index(p):
     '''Index : LSQUARE Expression RSQUARE'''
@@ -433,7 +495,6 @@ def p_argument(p):
 
 def p_expr_list_type_opt(p):
     '''ExpressionListTypeOpt : ExpressionList
-                             | Type ExpressionListCommaOpt
                              | epsilon'''
     if len(p) == 3:
         p[0] = ["ExpressionListTypeOpt", p[1], p[2]]
@@ -558,8 +619,8 @@ def p_unary_op(p):
 
 # -----------------CONVERSIONS-----------------------------
 def p_conversion(p):
-    '''Conversion : Type LPAREN Expression RPAREN'''
-    p[0] = ["Conversion", p[1], "(", p[3], ")"]
+    '''Conversion : TYPECAST Type LPAREN Expression RPAREN'''
+    p[0] = ["Conversion", p[1], p[2],  "(", p[4], ")"]
 # ---------------------------------------------------------
 
 
@@ -589,7 +650,7 @@ def p_simple_stmt(p):
                  | ExpressionStmt
                  | IncDecStmt
                  | Assignment
-		 | ShortVarDecl'''
+                 | ShortVarDecl '''
   p[0] = ["SimpleStmt", p[1]]
 
 
@@ -616,8 +677,16 @@ def p_inc_dec(p):
 
 
 def p_assignment(p):
-  ''' Assignment : ExpressionList AssignOp ExpressionList'''
+  ''' Assignment : ExpressionList assign_op ExpressionList'''
   p[0] = ["Assignment", p[1], p[2], p[3]]
+
+def p_assign_op(p):
+  ''' assign_op : AssignOp ASSIGN
+                | ASSIGN '''
+  if len(p) == 3:
+    p[0] = ["assign_op", p[1], p[2]]
+  else :
+    p[0] = ["assign_op", p[1]]
 
 def p_AssignOp(p):
   ''' AssignOp : PLUS_ASSIGN
@@ -635,8 +704,8 @@ def p_AssignOp(p):
 
 
 def p_if_statement(p):
-  ''' IfStmt : IF SimpleStmtOpt Expression Block ElseOpt '''
-  p[0] = ["IfStmt", "if", p[2], p[3]. p[4], p[5]]
+  ''' IfStmt : IF Expression Block ElseOpt '''
+  p[0] = ["IfStmt", "if", p[2], p[3], p[4]]
 
 def p_SimpleStmtOpt(p):
   ''' SimpleStmtOpt : SimpleStmt SEMICOLON
@@ -901,7 +970,7 @@ def p_package_name_dot_opt(p):
                         | PackageName
                         | epsilon'''
   if p[1]== '.':
-    p[0] = ["PackageNam", "."]
+    p[0] = ["PackageNameDotOpt", "."]
   else:
     p[0] = ["PackageNameDotOpt", p[1]]
 
@@ -983,8 +1052,6 @@ def p_error(p):
 
 # Build the parser
 parser = yacc.yacc()
-
-
 
 
 
@@ -1110,4 +1177,3 @@ print "<b style='color:red'>Start</b><br>"
 
 printResult(result, "" , "")
 print "</head></html>"
-
