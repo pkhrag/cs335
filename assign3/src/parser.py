@@ -48,8 +48,12 @@ def p_type_token(p):
                  | COMPLEX_T
                  | RUNE_T
                  | BOOL_T
-                 | STRING_T'''
-    p[0] = ["TypeToken", p[1]]
+                 | STRING_T
+                 | TYPE IDENTIFIER'''
+    if len(p) == 2:
+        p[0] = ["TypeToken", p[1]]
+    else:
+        p[0] = ["TypeToken", p[1], p[2]]
 
 def p_type_lit(p):
     '''TypeLit : ArrayType
@@ -252,7 +256,7 @@ def p_expr_rep(p):
     '''ExpressionRep : ExpressionRep COMMA Expression
                      | epsilon'''
     if len(p) == 4:
-        p[0] = ["ExpressionRep", p[1], ',', p[2]]
+        p[0] = ["ExpressionRep", p[1], ',', p[3]]
     else:
         p[0] = ["ExpressionRep", p[1]]
 # -------------------------------------------------------
@@ -330,7 +334,7 @@ def p_expr_list_opt(p):
 
 # ----------------SHORT VARIABLE DECLARATIONS-------------
 def p_short_var_decl(p):
-  ''' ShortVarDecl : IdentifierList QUICK_ASSIGN ExpressionList '''
+  ''' ShortVarDecl : IDENTIFIER QUICK_ASSIGN Expression '''
   p[0] = ["ShortVarDecl", p[1], ":=", p[3]]
 # -------------------------------------------------------
 
@@ -367,8 +371,8 @@ def p_operand(p):
         p[0] = ["Operand", "(". p[2], ")"]
 
 def p_literal(p):
-    '''Literal : BasicLit
-               | CompositeLit'''
+    '''Literal : BasicLit'''
+               #| CompositeLit'''
     p[0] = ["Literal", p[1]]
 
 def p_basic_lit(p):
@@ -389,7 +393,7 @@ def p_operand_name(p):
 
 # -------------------QUALIFIED IDENTIFIER----------------
 def p_quali_ident(p):
-    '''QualifiedIdent : PackageName DOT IDENTIFIER'''
+    '''QualifiedIdent : IDENTIFIER DOT TypeName'''
     p[0] = ["QualifiedIdent", p[1], ".", str(p[3])]
 # -------------------------------------------------------
 
@@ -616,8 +620,8 @@ def p_unary_op(p):
 
 # -----------------CONVERSIONS-----------------------------
 def p_conversion(p):
-    '''Conversion : Type LPAREN Expression RPAREN'''
-    p[0] = ["Conversion", p[1], "(", p[3], ")"]
+    '''Conversion : TYPECAST Type LPAREN Expression RPAREN'''
+    p[0] = ["Conversion", p[1], p[2],  "(", p[4], ")"]
 # ---------------------------------------------------------
 
 
@@ -678,12 +682,26 @@ def p_assignment(p):
   p[0] = ["Assignment", p[1], p[2], p[3]]
 
 def p_assign_op(p):
-  ''' assign_op : AddMulOp ASSIGN
+  ''' assign_op : AssignOp ASSIGN
                 | ASSIGN '''
   if len(p) == 3:
     p[0] = ["assign_op", p[1], p[2]]
   else :
     p[0] = ["assign_op", p[1]]
+
+def p_AssignOp(p):
+  ''' AssignOp : PLUS_ASSIGN
+               | MINUS_ASSIGN
+               | STAR_ASSIGN
+               | DIVIDE_ASSIGN
+               | MOD_ASSIGN
+               | AND_ASSIGN
+               | OR_ASSIGN
+               | XOR_ASSIGN
+               | LSHIFT_ASSIGN
+               | RSHIFT_ASSIGN
+               | ASSIGN '''
+  p[0] = ["AssignOp", p[1]]
 
 
 def p_if_statement(p):
@@ -858,8 +876,7 @@ def p_expression_ident_listopt(p):
   p[0] = ["ExpressionIdentListOpt", p[1]]
 
 def p_expressionidentifier(p):
-  '''ExpressionIdentifier : ExpressionList ASSIGN
-              | IdentifierList QUICK_ASSIGN'''
+  '''ExpressionIdentifier : ExpressionList ASSIGN'''
   if p[2] == "=":
     p[0] = ["ExpressionIdentifier", p[1], "="]
   else:
@@ -954,7 +971,7 @@ def p_package_name_dot_opt(p):
                         | PackageName
                         | epsilon'''
   if p[1]== '.':
-    p[0] = ["PackageNam", "."]
+    p[0] = ["PackageNameDotOpt", "."]
   else:
     p[0] = ["PackageNameDotOpt", p[1]]
 

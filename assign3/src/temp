@@ -1,1 +1,13 @@
 package main;
+import "fmt";
+
+type Abr int_t;
+
+func main(){
+    fmt.Println("hello");  
+    a = l.j;
+    // var declaration.
+    var a type Abr;
+    //conversion.
+    typecast int_t(a);
+};
