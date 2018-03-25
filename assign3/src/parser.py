@@ -369,7 +369,7 @@ def p_operand(p):
     if len(p) == 2:
         p[0] = ["Operand", p[1]]
     else:
-        p[0] = ["Operand", "(". p[2], ")"]
+        p[0] = ["Operand", "(", p[2], ")"]
 
 def p_literal(p):
     '''Literal : BasicLit'''
@@ -682,12 +682,8 @@ def p_assignment(p):
   p[0] = ["Assignment", p[1], p[2], p[3]]
 
 def p_assign_op(p):
-  ''' assign_op : AssignOp ASSIGN
-                | ASSIGN '''
-  if len(p) == 3:
-    p[0] = ["assign_op", p[1], p[2]]
-  else :
-    p[0] = ["assign_op", p[1]]
+  ''' assign_op : AssignOp'''
+  p[0] = ["assign_op", p[1]]
 
 def p_AssignOp(p):
   ''' AssignOp : PLUS_ASSIGN
@@ -740,7 +736,7 @@ def p_switch_statement(p):
 
 
 def p_expr_switch_stmt(p):
-  ''' ExprSwitchStmt : SWITCH SimpleStmtOpt ExpressionOpt LCURL ExprCaseClauseRep RCURL'''
+  ''' ExprSwitchStmt : SWITCH ExpressionOpt LCURL ExprCaseClauseRep RCURL'''
   p[0] = ["ExpressionStmt", "switch", p[2], p[3], "{", p[5], "}"]
 
 def p_expr_case_clause_rep(p):
