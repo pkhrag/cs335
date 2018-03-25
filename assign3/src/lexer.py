@@ -174,10 +174,9 @@ try:
             if not tok:
                 break
             Toks[tok.type][1]=Toks[tok.type][1]+1
-            if tok.value in Toks[tok.type]:
+            if tok.value in Toks[tok.type][2:]:
                 continue
             Toks[tok.type].append(tok.value)
-            # print(tok)
 
         print "TOKEN\t\t\tOCCURANCES\t\tLEXEMES"
         print "-"*64
