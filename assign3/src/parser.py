@@ -682,12 +682,8 @@ def p_assignment(p):
   p[0] = ["Assignment", p[1], p[2], p[3]]
 
 def p_assign_op(p):
-  ''' assign_op : AssignOp ASSIGN
-                | ASSIGN '''
-  if len(p) == 3:
-    p[0] = ["assign_op", p[1], p[2]]
-  else :
-    p[0] = ["assign_op", p[1]]
+  ''' assign_op : AssignOp'''
+  p[0] = ["assign_op", p[1]]
 
 def p_AssignOp(p):
   ''' AssignOp : PLUS_ASSIGN
