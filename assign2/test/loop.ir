@@ -1,0 +1,33 @@
+1, =, res, 0
+2, =, i, 0
+3, goto, D2052
+4, label, D2051
+5, =, j, 0
+6, goto, D2049
+7, label, D2048
+8, =, k, 0
+9, goto, D2046
+10, label, D2045
+11, +=, res, 1
+12, +=, k, 1
+13, label, D2046
+13, =, dummy3, 9
+14, <=, b, k, dummy3
+15, ifgoto, b, D2045
+16, goto, D2047
+17, label, D2047
+18, +=, j, 1
+19, label, D2049
+19, =, dummy1, 9
+20, <=, b, j, dummy1
+21, ifgoto, b, D2048
+22, goto, D2050
+23, label, D2050
+24, +=, i, 1
+25, label, D2052
+25, =, dummy2, 9
+26, <=, b, i, dummy2
+27, ifgoto, b, D2051
+28, goto, D2053
+29, label, D2053
+30, print, res

@@ -1,0 +1,34 @@
+1, =, D1732, 0
+2, =, D1736, 0
+3, =, i, 0
+4, =, j, 0
+5, =, sum, 0
+6, =, j, 1
+7, =, sum, 0
+8, =, i, 0
+9, =, j, 1
+10, goto, D1728
+11, label, D1727
+11, =, dummy4, 10
+12, %, D1732, j, dummy4
+12, =, dummy5, 0
+13, ==, dummy1, D1732, dummy5
+14, ifgoto, dummy1, D1733
+15, goto, D1734
+16, label, D1733
+17, print, j
+18, goto, D1735
+19, label, D1734
+20, +, sum, sum, i
+21, label, D1735
+22, +=, i, 1
+23, =, dummy3, 2
+23, x, j, i, dummy3
+24, label, D1728
+24, =, dummy6, 99
+25, <=, dummy2, i, dummy6
+26, ifgoto, dummy2, D1727
+27, goto, D1729
+28, label, D1729
+29, print, sum
+30, retvoid

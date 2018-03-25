@@ -1,7 +1,8 @@
 import ply.yacc as yacc
 import sys
 import os
-from lexer import tokens, data
+# from lexer import tokens, data
+from lexer import *
 from pprint import pprint
 
 
@@ -1168,8 +1169,8 @@ toFindNonTerminals(result)
 # print nonTTerminals
 
 # print nonTerminals
-
-sys.stdout = open("answer.html", "w+")
+file_name = file_name.split("/")[-1].split(".")[0] + ".html"
+sys.stdout = open(file_name, "w+")
 print "<!DOCTYPE html>\
 <html><head>"
 print "<b style='color:red'>Start</b><br>"
