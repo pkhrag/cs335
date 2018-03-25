@@ -1,0 +1,35 @@
+1, =, a, 10
+1, =, dummy1, 2
+1, +, b, a, dummy1
+1, =, dummy2, 7
+1, x, c, a, dummy2
+1, =, dummy3, -11
+1, +, d, a, dummy3
+1, =, dummy4, 5
+1, >, dummy6, a, dummy4
+1, ifgoto, dummy6, D1738
+1, goto, D1739
+1, label, D1738
+1, =, dummy5, 40
+1, +, f, a, dummy5
+1, =, dummy5, -40
+1, +, g, a, dummy5
+1, goto, D1740
+1, label, D1739
+1, =, dummy5, 20
+1, +, i, a, dummy5
+1, =, dummy5, -20
+1, +, j, a, dummy5
+1, label, D1740
+1, =, k, 0
+1, goto, D1735
+1, label, D1734
+1, +=, a, 1
+1, +=, i, 1
+1, +=, j, 1
+1, +=, k, 1
+1, label, D1735
+1, <, dummy7, k, b
+1, ifgoto, dummy7, D1734
+1, goto, D1736
+1, label, D1736

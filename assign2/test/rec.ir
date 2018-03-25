@@ -1,0 +1,25 @@
+1, =, g, 0
+1, scan, g
+1, callvoid, myfunc
+1, retvoid
+2, label, myfunc
+3, =, g0, 0
+4, =, g1, 1
+5, =, g2, 0
+6, =, g3, 0
+6, =, g0, g
+7, =, dummy, 0
+8, ==, dummy1, g0, dummy
+9, ifgoto, dummy1, D2046
+10, goto, D2047
+11, label, D2046
+12, retvoid
+13, label, D2047
+14, =, g1, g
+15, print, g1
+16, =, g2, g
+16, =, dummy2, 1
+17, -, g3, g2, dummy2
+18, =, g, g3
+19, callvoid, myfunc
+20, retvoid 
