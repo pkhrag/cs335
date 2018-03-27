@@ -7,3 +7,4 @@
 .gdb*
 parsetab.py
 peda-session*
+*.html
