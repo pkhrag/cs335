@@ -4,5 +4,5 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println("Hello World!")
+	var i int = 1;
 }
