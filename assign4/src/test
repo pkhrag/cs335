@@ -1,4 +1,10 @@
-package main;
+package math0;
 import "fmt";
 import "help";
-var i,j int_t;
+const a int_t = 0;
+
+func main ()
+{
+   var n int_t;
+   a = n; 
+};
