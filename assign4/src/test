@@ -3,6 +3,11 @@ import "fmt";
 import "help";
 const a int_t = 0;
 
+type Vertex struct {
+    a int_t;
+    n rune_t;
+};
+
 func main ()
 {
    var n int_t;

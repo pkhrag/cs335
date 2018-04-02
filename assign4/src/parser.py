@@ -20,6 +20,14 @@ def checkId(identifier, typeOf):
             return True
         return False
 
+    if typeOf == "*!s":
+        if scopeDict[currScope].getInfo(identifier) is not None:
+            info = scopeDict[currScope].getInfo(identifier)
+            if info['type'] is not 'type':
+                return True
+        return False
+
+
     for scope in scopeStack[::-1]:
         if scopeDict[scope].getInfo(identifier) is not None:
             info = scopeDict[scope].getInfo(identifier)
@@ -29,7 +37,7 @@ def checkId(identifier, typeOf):
     return False
 
 
-def addScope():
+def addScope(name=None):
     global scopeSeq
     global currScope
     scopeSeq += 1
@@ -38,9 +46,19 @@ def addScope():
     scopeStack.append(currScope)
     scopeDict[currScope] = symbolTable()
     scopeDict[currScope].setParent(lastScope)
+    if name is not None:
+        if type(name) is list:
+            scopeDict[lastScope].insert(name[1], 'func')
+            scopeDict[lastScope].updateArgList(name[1], 'child', scopeDict[currScope])
+        else:
+            if checkId(name, '*'):
+                raise NameError("Name " + name + " already defined")
+            scopeDict[lastScope].insert(name, 'type')
+            scopeDict[lastScope].updateArgList(name, 'child', scopeDict[currScope])
 
 
 def deleteScope():
+    global currScope
     currScope = scopeStack.pop()
     currScope = scopeStack[-1]
 
@@ -131,8 +149,8 @@ def p_element_type(p):
 
 # ----------------- STRUCT TYPE ---------------------------
 def p_struct_type(p):
-  '''StructType : STRUCT LCURL FieldDeclRep RCURL'''
-  p[0] = ["StructType", "struct", "{", p[3], "}"]
+  '''StructType : CreateFuncScope STRUCT LCURL FieldDeclRep RCURL EndScope'''
+  p[0] = ["StructType", "struct", "{", p[4], "}"]
 
 def p_field_decl_rep(p):
   ''' FieldDeclRep : FieldDeclRep FieldDecl SEMICOLON
@@ -345,7 +363,7 @@ def p_alias_decl(p):
 def p_type_def(p):
     '''TypeDef : IDENTIFIER Type'''
     p[0] = ["TypeDef", p[1], p[2]]
-    if checkId(p[1], "*"):
+    if checkId(p[1], "*!s"):
         raise NameError("Name " + p[1] + " already exists, can't redefine")
     else:
         scopeDict[currScope].insert(p[1], None)
@@ -401,9 +419,13 @@ def p_short_var_decl(p):
 
 # ----------------FUNCTION DECLARATIONS------------------
 def p_func_decl(p):
-    '''FunctionDecl : FUNC FunctionName CreateScope Function EndScope
-                    | FUNC FunctionName CreateScope Signature EndScope'''
+    '''FunctionDecl : FUNC FunctionName CreateFuncScope Function EndScope
+                    | FUNC FunctionName CreateFuncScope Signature EndScope'''
     p[0] = ["FunctionDecl", "func", p[2], p[4]]
+
+def p_create_func_scope(p):
+    '''CreateFuncScope : '''
+    addScope(p[-1])
 
 def p_create_scope(p):
     '''CreateScope : '''
@@ -1195,8 +1217,9 @@ result = parser.parse(s)
 toFindNonTerminals(result)
 # print nonTTerminals
 
-print scopeDict[1].table
-print scopeDict[1].parent
+#print scopeDict[0].table
+#print currScope
+#print scopeDict[1].parent
 # print nonTerminals
 file_name = file_name.split("/")[-1].split(".")[0] + ".html"
 sys.stdout = open(file_name, "w+")
