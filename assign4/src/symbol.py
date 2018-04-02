@@ -30,7 +30,7 @@ class symbolTable:
         if (self.lookUp(name)):
             (self.table)[name][key] = value
         else:
-            print ("Key Error Symbol name doesn't exists - Cant Update")
+            raise KeyError("Symbol " + name + " doesn't exists - Cant Update")
 
 
     def setParent(self, parent):
