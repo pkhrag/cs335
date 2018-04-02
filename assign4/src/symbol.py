@@ -1,10 +1,10 @@
 
 class symbolTable:
-    
-    def __init__(self,tableName):
+
+    def __init__(self):
         self.table = {}
         self.globalSymbolList = []
-        self.tableName = tableName
+        self.parent = None
 
     # Checks whether "name" lies in the symbol table
     def lookUp(self, name):
@@ -32,4 +32,7 @@ class symbolTable:
         else:
             print ("Key Error Symbol name doesn't exists - Cant Update")
 
+
+    def setParent(self, parent):
+        self.parent = parent
 
