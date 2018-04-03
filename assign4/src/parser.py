@@ -36,7 +36,7 @@ class Node:
         self.code = []
         self.type = None
         self.next = None
-	self.place = None
+	      self.place = None
 
 # --------------------------------------------------------
 
