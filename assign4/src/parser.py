@@ -98,7 +98,7 @@ precedence = (
     ('left', 'LESSER', 'GREATER','LESS_EQUALS','MORE_EQUALS'),
     ('left', 'LSHIFT', 'RSHIFT'),
     ('left', 'PLUS', 'MINUS'),
-    ('left', 'STAR', 'DIVIDE','MOD'),
+    ('left', 'STAR', 'DIVIDE','MOD')
 )
 
 # ------------- IR GENERATION -----------
@@ -107,7 +107,7 @@ class Node:
     def __init__(self):
         self.idList = []
         self.code = []
-        self.type = None
+        self.typeList = []
         self.next = None
         self.placelist = []
         self.extra = None
@@ -320,26 +320,35 @@ def p_const_decl(p):
     '''ConstDecl : CONST ConstSpec
                  | CONST LPAREN ConstSpecRep RPAREN'''
     if len(p) == 3:
-        p[0] = ["ConstDecl", "const", p[2]]
+        p[0] = p[2]
     else:
-        p[0] = ["ConstDecl", "const", '(', p[3], ')']
+        p[0] = p[3]
 
 def p_const_spec_rep(p):
     '''ConstSpecRep : ConstSpecRep ConstSpec SEMICOLON
                     | epsilon'''
     if len(p) == 4:
-        p[0] = ["ConstSpecRep", p[1], p[2], ';']
+        p[0] = p[1]
+        p[0].code += p[2].code
     else:
-        p[0] = ["ConstSpecRep", p[1]]
+        p[0] = p[1]
 
 def p_const_spec(p):
     '''ConstSpec : IdentifierList Type ASSIGN ExpressionList'''
-    p[0] = ["ConstSpec", p[1], p[2], "=", p[4]]
-    #TODO insert type in symbol table
+    p[0] = Node()
+    p[0].code = p[1].code + p[4].code
 
-#def p_type_expr_list(p):
-#    '''TypeExprListOpt : '''
-#    p[0] = ["TypeExprListOpt", p[1], "=", p[3]]
+    if(len(p[1].placelist) != len(p[4].placelist)):
+        raise ValueError("Error: mismatch in number of identifiers and expressions for asisgnment")
+
+    for x in range(len(p[1].placelist)):
+        if p[4].typeList[x] != 'lit':
+            p[0].code.append(["=", p[1].placelist[x], p[4].placelist[x]])
+        p[1].placelist[x] = p[4].placelist[x]
+        scope = findScope(p[1].idList[x])
+        scopeDict[scope].updateArgList(p[1].idList[x], 'place', p[1].placelist[x])
+
+    #TODO insert type in symbol table
 
 def p_identifier_list(p):
     '''IdentifierList : IDENTIFIER IdentifierRep'''
@@ -363,6 +372,7 @@ def p_identifier_rep(p):
         else:
             scopeDict[currScope].insert(p[3], None)
             nameTemp = newTemp()
+            p[0].placelist = p[0].placelist + [nameTemp]
             scopeDict[currScope].updateArgList(p[3], 'place', nameTemp)
 
 
@@ -375,6 +385,7 @@ def p_expr_list(p):
     p[0] = p[2]
     p[0].code = p[1].code+p[0].code
     p[0].placelist = p[1].placelist + p[0].placelist
+    p[0].typeList = p[1].typeList + p[0].typeList
 
 def p_expr_rep(p):
     '''ExpressionRep : ExpressionRep COMMA Expression
@@ -383,11 +394,11 @@ def p_expr_rep(p):
     	p[0] = p[1]
     	p[0].code += p[3].code
     	p[0].placelist += p[3].placelist
-    	# TODO
-    	# p[0].typelist += p[3].typelist
+    	p[0].typeList += p[3].typeList
+
     else:
     	p[0] = p[1]
-# -------------------------------------------------------
+# ------------------------------------------------------
 
 
 # ------------------TYPE DECLARATIONS-------------------
@@ -459,12 +470,14 @@ def p_var_spec(p):
         p[0].code = p[1].code + p[3].code
 
         if(len(p[1].placelist) != len(p[3].placelist)):
-    	    print len(p[1].placelist), len(p[3].placelist)
             raise ValueError("Error: mismatch in number of identifiers and expressions for asisgnment")
 
         for x in range(len(p[1].placelist)):
-            #p[0].code.append(["=", p[1].placelist[x], p[3].placelist[x]])
+            if p[3].typeList[x] != 'lit':
+                p[0].code.append(["=", p[1].placelist[x], p[3].placelist[x]])
             p[1].placelist[x] = p[3].placelist[x]
+
+            #TODO typelist check required
             scope = findScope(p[1].idList[x])
             scopeDict[scope].updateArgList(p[1].idList[x], 'place', p[1].placelist[x])
     else:
@@ -475,14 +488,15 @@ def p_var_spec(p):
 
         p[0] = Node()
         p[0].code = p[1].code + p[3].code
-
         if(len(p[1].placelist) != len(p[3].placelist)):
-    	    print len(p[1].placelist), len(p[3].placelist)
             raise ValueError("Error: mismatch in number of identifiers and expressions for asisgnment")
 
         for x in range(len(p[1].placelist)):
-            #p[0].code.append(["=", p[1].placelist[x], p[3].placelist[x]])
+            if p[3].typeList[x] != 'lit':
+                p[0].code.append(["=", p[1].placelist[x], p[3].placelist[x]])
             p[1].placelist[x] = p[3].placelist[x]
+
+            #TODO typelist check required
             scope = findScope(p[1].idList[x])
             scopeDict[scope].updateArgList(p[1].idList[x], 'place', p[1].placelist[x])
 
@@ -571,9 +585,9 @@ def p_basic_lit(p):
                 | STRING'''
     p[0] = Node()
     name = newTemp()
-    p[0].code.append(["=", name, p[1] ])
+    p[0].code.append(["=", name, p[1]])
     p[0].placelist.append(name)
-    p[0].type = None
+    p[0].typeList.append('lit')
 
 
 def p_operand_name(p):
@@ -583,7 +597,7 @@ def p_operand_name(p):
     p[0] = Node()
     info = findInfo(p[1])
     p[0].placelist.append(info['place'])
-    p[0].type = info['type']
+    p[0].typeList = [info['type']]
 # ---------------------------------------------------------
 
 
@@ -602,13 +616,25 @@ def p_prim_expr(p):
     '''PrimaryExpr : Operand
                    | PrimaryExpr Selector
                    | Conversion
-                   | PrimaryExpr Index
+                   | PrimaryExpr LSQUARE Expression RSQUARE
                    | PrimaryExpr Slice
                    | PrimaryExpr TypeAssertion
-                   | PrimaryExpr Arguments'''
+                   | PrimaryExpr LPAREN ExpressionListTypeOpt RPAREN'''
     if len(p) == 2:
         p[0] = p[1]
+    elif p[2] == '[':
+        p[0] = p[1]
+        p[0].code += p[3].code
+        newPlace = newTemp()
+        p[0].code.append(['+', newPlace, p[0].placelist[0], p[3].placelist[0]])
+        newPlace2 = newTemp()
+        p[0].code.append(['*', newPlace2, newPlace])
+        p[0].placelist = [newPlace2]
 
+        #TODO type of p[0] needs to be updated
+    elif p[2] == '(':
+        #TODO function
+        pass
     else:
         p[0] = ["PrimaryExpr", p[1], p[2]]
 
@@ -616,10 +642,6 @@ def p_selector(p):
     '''Selector : DOT IDENTIFIER'''
     p[0] = ["Selector", ".", p[2]]
     #TODO struct
-
-def p_index(p):
-    '''Index : LSQUARE Expression RSQUARE'''
-    p[0] = ["Index", "[", p[2], "]"]
 
 def p_slice(p):
     '''Slice : LSQUARE ExpressionOpt COLON ExpressionOpt RSQUARE
@@ -633,17 +655,10 @@ def p_type_assert(p):
     '''TypeAssertion : DOT LPAREN Type RPAREN'''
     p[0] = ["TypeAssertion", ".", "(", p[3], ")"]
 
-def p_argument(p):
-    '''Arguments : LPAREN ExpressionListTypeOpt RPAREN'''
-    p[0] = ["Arguments", "(", p[2], ")"]
-
 def p_expr_list_type_opt(p):
     '''ExpressionListTypeOpt : ExpressionList
                              | epsilon'''
-    if len(p) == 3:
-        p[0] = ["ExpressionListTypeOpt", p[1], p[2]]
-    else:
-        p[0] = ["ExpressionListTypeOpt", p[1]]
+    p[0] = p[1]
 
 #def p_comma_opt(p):
 #    '''CommaOpt : COMMA
@@ -666,84 +681,68 @@ def p_expr_list_comma_opt(p):
 #----------------------OPERATORS-------------------------
 def p_expr(p):
     '''Expression : UnaryExpr
-                  | Expression BinaryOp Expression'''
+                  | Expression LOGICAL_OR Expression
+                  | Expression LOGICAL_AND Expression
+                  | Expression EQUALS Expression
+                  | Expression NOT_ASSIGN Expression
+                  | Expression LESSER Expression
+                  | Expression GREATER Expression
+                  | Expression LESS_EQUALS Expression
+                  | Expression MORE_EQUALS Expression
+                  | Expression OR Expression
+                  | Expression XOR Expression
+                  | Expression DIVIDE Expression
+                  | Expression MOD Expression
+                  | Expression LSHIFT Expression
+                  | Expression RSHIFT Expression
+                  | Expression PLUS Expression
+                  | Expression MINUS Expression
+                  | Expression STAR Expression
+                  | Expression AND Expression'''
     if len(p) == 4:
-        p[0] = ["Expression", p[1], p[2], p[3]]
+        p[0] = p[1]
+        p[0].code += p[3].code
+        newPlace = newTemp()
+        if p[2] == "*":
+            p[0].code.append(["x",newPlace,p[1].placelist[0], p[3].placelist[0] ])
+        else:
+            p[0].code.append([p[2],newPlace,p[1].placelist[0], p[3].placelist[0] ])
+        p[0].placelist = [newPlace]
+
+        #TODO typechecking based on typelist
+
     else:
         p[0] = p[1]
-
 
 def p_expr_opt(p):
     '''ExpressionOpt : Expression
                      | epsilon'''
-    p[0] = ["ExpressionOpt", p[1]]
+    p[0] = p[1]
 
 def p_unary_expr(p):
     '''UnaryExpr : PrimaryExpr
                  | UnaryOp UnaryExpr
                  | NOT UnaryExpr'''
     if len(p) == 2:
-   		p[0] = p[1]
+   	p[0] = p[1]
 
     elif p[1] == "!":
-        p[0] = ["UnaryExpr", "!", p[2]]
+        p[0] = p[2]
+        newPlace = newTemp()
+        p[0].code.append(["!", newPlace, p[2].placelist[0]])
+        p[0].placelist = [newPlace]
     else:
-        p[0] = ["UnaryExpr", p[1], p[2]]
+        p[0] = p[2]
+        newPlace = newTemp()
+        if p[1][1] == "-" or p[1][1] == '+':
 
-def p_binary_op(p):
-    '''BinaryOp : LOGICAL_OR
-                | LOGICAL_AND
-                | RelOp
-                | AddMulOp'''
-    if p[1] == "||":
-        p[0] = ["BinaryOp", "||"]
-    elif p[1] == "&&":
-        p[0] = ["BinaryOp", "&&"]
-    else:
-        p[0] = ["BinaryOp", p[1]]
+            newPlace2 = newTemp()
+            p[0].append(['=',newPlace2, 0])
+            p[0].append([p[1][1],newPlace, newPlace2, p[2].placelist[0]])
 
-def p_rel_op(p):
-    '''RelOp : EQUALS
-             | NOT_ASSIGN
-             | LESSER
-             | GREATER
-             | LESS_EQUALS
-             | MORE_EQUALS'''
-    if p[1] == "==":
-        p[0] = ["RelOp", "=="]
-    elif p[1] == "!=":
-        p[0] = ["RelOp", "!="]
-    elif p[1] == "<":
-        p[0] = ["RelOp", "<"]
-    elif p[1] == ">":
-        p[0] = ["RelOp", ">"]
-    elif p[1] == "<=":
-        p[0] = ["RelOp", "<="]
-    elif p[1] == ">=":
-        p[0] = ["RelOp", ">="]
-
-def p_add_mul_op(p):
-    '''AddMulOp : UnaryOp
-                | OR
-                | XOR
-                | DIVIDE
-                | MOD
-                | LSHIFT
-                | RSHIFT'''
-    if p[1] == "/":
-        p[0] = ["AddMulOp", "/"]
-    elif p[1] == "%":
-        p[0] = ["AddMulOp", "%"]
-    elif p[1] == "|":
-        p[0] = ["AddMulOp", "|"]
-    elif p[1] == "^":
-        p[0] = ["AddMulOp", "^"]
-    elif p[1] == "<<":
-        p[0] = ["AddMulOp", "<<"]
-    elif p[1] == ">>":
-        p[0] = ["AddMulOp", ">>"]
-    else:
-        p[0] = ["AddMulOp", p[1]]
+        else:
+            p[0].code.append([p[1][1], newPlace, p[2].placelist[0]])
+        p[0].placelist = [newPlace]
 
 def p_unary_op(p):
     '''UnaryOp : PLUS
@@ -767,6 +766,7 @@ def p_unary_op(p):
 def p_conversion(p):
     '''Conversion : TYPECAST Type LPAREN Expression RPAREN'''
     p[0] = ["Conversion", p[1], p[2],  "(", p[4], ")"]
+    #TODO type conversion
 # ---------------------------------------------------------
 
 
