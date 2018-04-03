@@ -9,7 +9,12 @@ type Abser int_t;
 type Vertex struct {
 	X, Y float_t;
 };
-func main() {
+
+ func Abs(v *type Vertex) float_t {
+ 	return math.Sqrt(v.X*v.Y+x.Y);
+ };
+
+ func main() {
  var a type Abser;
  f :=  typecast type MyFloat(a);
  var v type Vertex;
@@ -37,7 +42,4 @@ func main() {
  };
 
 
- func Abs(v *type Vertex) float_t {
- 	return math.Sqrt(v.X*v.Y+x.Y);
- };
  

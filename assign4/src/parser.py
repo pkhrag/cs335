@@ -13,6 +13,8 @@ scopeStack = [0]
 currScope = 0
 scopeSeq = 0
 varSeq = 0
+firstFunc = True
+labelSeq = 1
 
 def checkId(identifier, typeOf):
     if typeOf == "*":
@@ -68,6 +70,12 @@ def newTemp():
     toRet = 'var'+str(varSeq)
     varSeq += 1
     return toRet
+
+def newLabel():
+    global labelSeq
+    toret = 'label' + str(labelSeq)
+    labelSeq += 1
+    return toret
 
 
 def findInfo(name):
@@ -235,19 +243,10 @@ def p_base_type(p):
 
 
 # ---------------FUNCTION TYPES----------------------------
+#TODO
 def p_sign(p):
-    '''Signature : Parameters ResultOpt'''
+    '''Signature : Parameters TypeOpt'''
     p[0] = ["Signature", p[1], p[2]]
-
-def p_result_opt(p):
-    '''ResultOpt : Result
-                 | epsilon'''
-    p[0] = ["ResultOpt", p[1]]
-
-def p_result(p):
-    '''Result : Parameters
-              | Type'''
-    p[0] = ["Result", p[1]]
 
 def p_params(p):
     '''Parameters : LPAREN ParameterListOpt RPAREN'''
@@ -285,19 +284,20 @@ def p_param_decl(p):
 #-----------------------BLOCKS---------------------------
 def p_block(p):
     '''Block : LCURL StatementList RCURL'''
-    p[0] = ["Blocks", "{" , p[2], "}"]
+    p[0] = p[2]
 
 def p_stat_list(p):
     '''StatementList : StatementRep'''
-    p[0] = ["StatementList", p[1]]
+    p[0] = p[1]
 
 def p_stat_rep(p):
     '''StatementRep : StatementRep Statement SEMICOLON
                     | epsilon'''
     if len(p) == 4:
-        p[0] = ["StatementRep", p[1], p[2], ';']
+        p[0] = p[1]
+        p[0].code += p[2].code
     else:
-        p[0] = ["StatementRep", p[1]]
+        p[0] = p[1]
 # -------------------------------------------------------
 
 
@@ -527,7 +527,20 @@ def p_short_var_decl(p):
 def p_func_decl(p):
     '''FunctionDecl : FUNC FunctionName CreateFuncScope Function EndScope
                     | FUNC FunctionName CreateFuncScope Signature EndScope'''
-    p[0] = ["FunctionDecl", "func", p[2], p[4]]
+    if type(p[4]) is list:
+        p[0] = Node()
+        return
+
+    p[0] = Node()
+    global firstFunc
+    if firstFunc:
+        firstFunc = False
+        p[0].code = [["goto", "label0"]]
+    info = findInfo(p[2][1])
+    label = info['label']
+
+    p[0].code.append(['label', label])
+    p[0].code += p[4].code
 
 def p_create_func_scope(p):
     '''CreateFuncScope : '''
@@ -548,15 +561,20 @@ def p_func_name(p):
         raise NameError("Name " + p[1] + " already exists, can't redefine")
     else:
         scopeDict[currScope].insert(p[1], "func")
+        if p[1] == "main":
+            scopeDict[currScope].updateArgList("main", "label", "label0")
+        else:
+            label = newLabel()
+            scopeDict[currScope].updateArgList(p[1], "label", label)
 
 def p_func(p):
     '''Function : Signature FunctionBody'''
-    p[0] = ["Function", p[1], p[2]]
+    p[0] = p[2]
     # print p[-2]
 
 def p_func_body(p):
     '''FunctionBody : Block'''
-    p[0] = ["FunctionBody", p[1]]
+    p[0] = p[1]
 # -------------------------------------------------------
 
 
@@ -788,9 +806,9 @@ def p_statement(p):
                  | SwitchStmt
                  | ForStmt '''
     if len(p) == 2:
-        p[0] = ["Statement", p[1]]
+        p[0] = p[1]
     else:
-        p[0] = ["Statement", p[2]]
+        p[0] = p[2]
 
 
 
@@ -806,6 +824,7 @@ def p_simple_stmt(p):
 def p_labeled_statements(p):
   ''' LabeledStmt : Label COLON Statement '''
   p[0] = ["LabeledStmt", p[1], ":", p[3]]
+  #TODO
 
 def p_label(p):
   ''' Label : IDENTIFIER '''
@@ -836,7 +855,7 @@ def p_assignment(p):
   p[0].code = p[1].code
   p[0].code += p[3].code
   for x in range(len(p[1].placelist)):
-      p[0].code.append([p[2][1][1]], p[1].placelist[x], p[3].placelist[x])
+      p[0].code.append([p[2][1][1], p[1].placelist[x], p[3].placelist[x]])
 
 def p_assign_op(p):
   ''' assign_op : AssignOp'''
@@ -860,6 +879,7 @@ def p_AssignOp(p):
 def p_if_statement(p):
   ''' IfStmt : IF Expression CreateScope Block EndScope ElseOpt '''
   p[0] = ["IfStmt", "if", p[2], p[4], p[6]]
+  #TODO
 
 def p_SimpleStmtOpt(p):
   ''' SimpleStmtOpt : SimpleStmt SEMICOLON
@@ -870,6 +890,7 @@ def p_else_opt(p):
   ''' ElseOpt : ELSE IfStmt
               | ELSE CreateScope Block EndScope
               | epsilon '''
+  #TODO
   if len(p) == 3:
     p[0] = ["ElseOpt", "else", p[2]]
   elif len(p) == 5:
@@ -1035,13 +1056,17 @@ def p_expressionidentifier(p):
     p[0] = ["ExpressionIdentifier", p[1], ":="]
 
 def p_return(p):
-  '''ReturnStmt : RETURN ExpressionListPureOpt'''
-  p[0] = ["ReturnStmt", "return", p[2]]
+  '''ReturnStmt : RETURN ExpressionPureOpt'''
+  p[0] = p[2]
+  if len(p[2].placelist) != 0:
+    p[0].code.append(["retint", p[2].placelist[0]])
+  else:
+    p[0].code.append(["retvoid"])
 
-def p_expressionlist_pure_opt(p):
-  '''ExpressionListPureOpt : ExpressionList
+def p_expression_pure_opt(p):
+  '''ExpressionPureOpt : Expression
              | epsilon'''
-  p[0] = ["ExpressionListPureOpt", p[1]]
+  p[0] = p[1]
 
 def p_break(p):
   '''BreakStmt : BREAK LabelOpt'''
