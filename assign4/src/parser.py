@@ -77,7 +77,6 @@ precedence = (
     ('left', 'STAR', 'DIVIDE','MOD'),
 )
 
-
 # ------------- IR GENERATION -----------
 
 class Node:
@@ -290,7 +289,7 @@ def p_decl(p):
   '''Declaration : ConstDecl
                  | TypeDecl
                  | VarDecl'''
-  p[0] = p[1]
+  p[0] = ["Declaration", p[1]]
 
 def p_toplevel_decl(p):
   '''TopLevelDecl : Declaration
@@ -1198,6 +1197,7 @@ def toFindNonTerminals(graph):
 def printResult(graph, prev, after):
 
   word = ""
+<<<<<<< HEAD
 
   if type(graph) is list:
 
@@ -1294,6 +1294,94 @@ def printList(node):
 
     print toPrint
     lineNo += 1
+
+=======
+
+  if type(graph) is list:
+
+    lastFound = 0
+    for i in range (len(graph)-1,0,-1):
+      if type(graph[i]) is list:
+        if word != "":
+          if lastFound==1:
+            word = graph[i][0]+ " " + word
+          else:
+            lastFound = 1
+            word =  "<b style='color:red'>" + graph[i][0]+ "</b>" + " " + word
+        else:
+          if lastFound == 1:
+            word = graph[i][0]
+          else:
+            lastFound = 1
+            word = "<b style='color:red'>" + graph[i][0] + "</b>"
+      else:
+        if word != "":
+          word =  graph[i] + " " + word
+        else:
+          word = graph[i]
+
+    # word = '<span style="color:red">' + word + "</span>"
+
+    if prev != "" and after != "":
+      final = prev + " " + word + " "+ after
+    elif prev == "" and after == "":
+      final = word
+    elif prev == "":
+      final = word + " " + after
+    else :
+      final = prev + " " +word
+
+    final = (final.replace(" epsilon", ""))
+    toFindNT = final.split()
+    # print toFindNT
+
+
+    # print lastFound
+    if lastFound == 0:
+      for kk in range(len(toFindNT)-1,-1,-1):
+        if toFindNT[kk] in nonTerminals:
+          lastFound = 1
+          toFindNT[kk] = "<b style='color:red'>" + toFindNT[kk] + "</b>"
+          break
+    final = ' '.join(toFindNT)
+    print  final + "<br/>"
+
+
+
+    for i in range(len(graph)-1,0,-1):
+      prevNew = prev
+
+      for j in range (1,i):
+        if type(graph[j]) is list:
+          if prevNew != "":
+            prevNew += " " + graph[j][0]
+          else :
+            prevNew = graph[j][0]
+        else:
+          if prevNew != "":
+            prevNew += " " + graph[j]
+          else:
+            prevNew = graph[j]
+      # print "prev " + prevNew
+      afterNew = after
+      # print "after " + afterNew
+      afterNew = printResult(graph[i],prevNew,afterNew)
+      # print "afterNew " + afterNew
+      after = afterNew
+
+
+    return after
+
+
+
+  word = graph
+  # print "after String " + word + after
+
+  if word != "":
+    return word+" "+after
+  return after
+
+
 
 try:
   s = data
