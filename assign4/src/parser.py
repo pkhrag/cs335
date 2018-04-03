@@ -842,7 +842,7 @@ def p_labeled_statements(p):
     raise NameError("Label " + p[1][1] + " already exists, can't redefine")
   
   newl = ''
-  if labelDict[p[1][1]] is not None:
+  if p[1][1] in labelDict:
   	scopeDict[0].insert(p[1][1], "label")
   	scopeDict[0].updateArgList(p[1][1], 'label', labelDict[p[1][1]][1])
   	labelDict[p[1][1]][0] = True
@@ -851,7 +851,7 @@ def p_labeled_statements(p):
   	newl = newLabel()
   	scopeDict[0].insert(p[1][1], "label")
   	scopeDict[0].updateArgList(p[1][1], 'label', newl)
-  	labelDict[p[1][1]] = (True, newl)
+  	labelDict[p[1][1]] = [True, newl]
   
   p[0] = p[3]
   p[0].code = [['label',newl]] + p[0].code
@@ -1098,7 +1098,7 @@ def p_break(p):
   if type(p[2]) is list:
   	if p[2][1] not in labelDict:
   		newl = newLabel()
-  		labelDict[p[2][1]] = (False, newl)
+  		labelDict[p[2][1]] = [False, newl]
   	p[0] = Node()
   	p[0].code = [['goto', labelDict[p[2][1]][1]]]
   else:
@@ -1111,7 +1111,7 @@ def p_continue(p):
   if type(p[2]) is list:
   	if p[2][1] not in labelDict:
   		newl = newLabel()
-  		labelDict[p[2][1]] = (False, newl)
+  		labelDict[p[2][1]] = [False, newl]
   	p[0] = Node()
   	p[0].code = [['goto', labelDict[p[2][1]][1]]]
   else:
@@ -1128,7 +1128,7 @@ def p_goto(p):
   '''GotoStmt : GOTO Label '''
   if p[2][1] not in labelDict:
   	newl = newLabel()
-  	labelDict[p[2][1]] = (False, newl)
+  	labelDict[p[2][1]] = [False, newl]
   p[0] = Node()
   p[0].code = [['goto', labelDict[p[2][1]][1]]]
   
@@ -1432,7 +1432,8 @@ def printList(node):
 
 
 def checkLabel():
-	for x,j in enumerate(labelDict):
+	for x in labelDict:
+		# print "aas"
 		if labelDict[x][0] == False:
 			raise NameError("Label " + x + " is not defined but is directed using Goto !")
 

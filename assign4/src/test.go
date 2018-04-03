@@ -19,6 +19,8 @@ func hutiya(a int_t, b int_t) int_t {
 
 func main() {
     i += 3;
+	lsls :
+	goto dsds;
     if i>3 {
         i+=7;
     }
@@ -27,6 +29,10 @@ func main() {
     };
 	for i := 1; i < 3; i++{
 		var j int_t = 3;
+		if j < 2 {
+			break lsls;
+		};
 	};
+	dsds : 
     return 0;    
 };
