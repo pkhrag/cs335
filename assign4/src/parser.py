@@ -32,11 +32,26 @@ precedence = (
 
 class Node:
     def __init__(self):
-        self.val = None
+        self.idList = []
         self.code = []
         self.type = None
         self.next = None
-	self.place = None
+        self.place = None
+        self.extra = None
+
+
+
+def default(typeOf):
+  if typeOf == "int_t":
+    return str(0)
+
+
+def expressionListLength(x):
+  l = 0
+  while x is not None:
+    x = x.next
+    l += 1
+  return l
 
 # --------------------------------------------------------
 
@@ -81,6 +96,7 @@ def p_type_token(p):
         p[0] = Node()
         p[0].type = p[1]
     else:
+        # TODO
         p[0] = ["TypeToken", p[1], p[2]]
 
 def p_type_lit(p):
@@ -349,23 +365,20 @@ def p_var_spec_rep(p):
         p[0] = p[1]
 
 
-def default(typeOf):
-  if typeOf == "int_t":
-    return str(0)
 
 
 def p_var_spec(p):
     '''VarSpec : IdentifierList Type ExpressionListOpt
                | IdentifierList ASSIGN ExpressionList'''
     if p[2] == '=':
-    #   p[0] = Node()
-    #   if(len(p[1].code) != len(p[2].code) and len(p[2].code != 0)):
-    #     print "Error: mismatch in number of identifiers and expressions for asisgnment"
-    #     sys.exit()
+      p[0] = Node()
+      if(len(p[1].code) != len(p[2].code)):
+        print "Error: mismatch in number of identifiers and expressions for asisgnment"
+        sys.exit()
 
-    #   p[0].code = p[1].code
-    #   for i in range(0, len(p[2].code)):
-    #     p[0].code.append(["=",p[1].code[i][1],p[2].code[i]])
+      p[0].code = p[1].code
+      for i in range(0, len(p[2])):
+        p[0].code.append(["=",p[1].code[i][1],p[2][i].place])
       pass
 
 
@@ -410,6 +423,7 @@ def p_func_name(p):
 def p_func(p):
     '''Function : Signature FunctionBody'''
     p[0] = ["Function", p[1], p[2]]
+    # print p[-2]
 
 def p_func_body(p):
     '''FunctionBody : Block'''
@@ -980,7 +994,7 @@ def p_import_decl_rep(p):
     p[0].code += p[2].code
     # print p[2].code
     # print p[0].next.next.code
-  
+
   else:
     # p[0] = ["ImportDeclRep", p[1]]
     p[0] = p[1]
@@ -993,6 +1007,7 @@ def p_toplevel_decl_rep(p):
                      | epsilon'''
   if len(p) == 4:
     p[0] = p[1]
+    # print type(p[1])
     p[0].code += p[2].code
   else:
     p[0] = p[1]
@@ -1005,8 +1020,8 @@ def p_toplevel_decl_rep(p):
 def p_package_clause(p):
     '''PackageClause : PACKAGE PackageName'''
     # p[0] = ["PackageClause", "package", p[2]]
-    p[0] = Node()
-    p[0].code = [["package",str(p[2].val)]]
+    p[0] = p[2]
+    p[0].code = [["package",str(p[2].idList[0])]]
 
 
 
@@ -1014,7 +1029,8 @@ def p_package_name(p):
     '''PackageName : IDENTIFIER'''
     # p[0] = ["PackageName", p[1]]
     p[0] = Node()
-    p[0].val = str(p[1])
+    p[0].idList.append(str(p[1]))
+    # print p[-1]
 # -----------------------------------------------
 
 
@@ -1025,10 +1041,14 @@ def p_import_decl(p):
   if len(p) == 3:
     # p[0] = ["ImportDecl", "import", p[2]]
     p[0] = p[2]
+    p[0].code = [["import"] + p[2].idList]
 
   else:
     # p[0] = ["ImportDecl", "import", "(", p[3], ")"]
-    p[0] = p[3]
+    p[0] = Node()
+    for i in p[3].idList:
+      p[0].code.append(["import", i])
+
 
 
 
@@ -1039,7 +1059,8 @@ def p_import_spec_rep(p):
   if len(p) == 4:
     # p[0] = ["ImportSpecRep", p[1], p[2], ";"]
     p[0] = p[1]
-    p[0].code += p[2].code
+    # p[0].code += p[2].code
+    p[0].idList += p[2].idList
 
   else:
     # p[0] = ["ImportSpecRep", p[1]]
@@ -1050,7 +1071,11 @@ def p_import_spec(p):
   ''' ImportSpec : PackageNameDotOpt ImportPath '''
   # p[0] = ["ImportSpec", p[1], p[2]]
   p[0] = p[1]
-  p[0].code += p[2].code
+  if len(p[1].idList) != 0:
+    p[0].idList =  p[1].idList[0] + " " + p[2].idList[0]
+  else:
+    p[0].idList += p[2].idList
+
   
 
 def p_package_name_dot_opt(p):
@@ -1059,6 +1084,7 @@ def p_package_name_dot_opt(p):
                         | epsilon'''
   if p[1]== '.':
     p[0] = Node()
+    p[0].idList.append(".")
   
 
   else:
@@ -1070,7 +1096,7 @@ def p_import_path(p):
   ''' ImportPath : STRING '''
   # p[0] = ["ImportPath", p[1]]
   p[0] = Node()
-  p[0].code = [["import", str(p[1])]]
+  p[0].idList.append(str(p[1]))
 # -------------------------------------------------------
 
 
