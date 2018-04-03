@@ -12,6 +12,7 @@ scopeDict[0] = symbolTable()
 scopeStack = [0]
 currScope = 0
 scopeSeq = 0
+varSeq = 0
 
 def checkId(identifier, typeOf):
     if typeOf == "*":
@@ -62,6 +63,29 @@ def deleteScope():
     currScope = scopeStack.pop()
     currScope = scopeStack[-1]
 
+def newTemp():
+    global varSeq
+    toRet = 'var'+str(varSeq)
+    varSeq += 1
+    return toRet
+
+
+def findInfo(name):
+    for scope in scopeStack[::-1]:
+        if  scopeDict[scope].getInfo(name) is not None:
+            info = scopeDict[scope].getInfo(name)
+            return info
+
+    raise NameError("Identifier " + name + " is not defined!")
+
+def findScope(name):
+    for scope in scopeStack[::-1]:
+        if  scopeDict[scope].getInfo(name) is not None:
+            return scope
+
+    raise NameError("Identifier " + name + " is not defined!")
+
+
 # ------------------------------------------------------
 precedence = (
     ('right','ASSIGN', 'NOT'),
@@ -85,22 +109,15 @@ class Node:
         self.code = []
         self.type = None
         self.next = None
-        self.place = None
+        self.placelist = []
         self.extra = None
 
 
 
-def default(typeOf):
-  if typeOf == "int_t":
-    return str(0)
+# def defaultType(typeOf):
+#   if typeOf == "int_t":
+#     return str(0)
 
-
-def expressionListLength(x):
-  l = 0
-  while x is not None:
-    x = x.next
-    l += 1
-  return l
 
 # --------------------------------------------------------
 
@@ -289,7 +306,7 @@ def p_decl(p):
   '''Declaration : ConstDecl
                  | TypeDecl
                  | VarDecl'''
-  p[0] = ["Declaration", p[1]]
+  p[0] = p[1]
 
 def p_toplevel_decl(p):
   '''TopLevelDecl : Declaration
@@ -326,11 +343,15 @@ def p_const_spec(p):
 
 def p_identifier_list(p):
     '''IdentifierList : IDENTIFIER IdentifierRep'''
-    p[0] = ["IdentifierList", p[1], p[2]]
+    p[0]= p[2]
+    p[0].idList = [p[1]] + p[0].idList
     if checkId(p[1], "*"):
         raise NameError("Name " + p[1] + " already exists, can't redefine")
     else:
         scopeDict[currScope].insert(p[1], None)
+        nameTemp = newTemp()
+        p[0].placelist = [nameTemp] + p[0].placelist
+        scopeDict[currScope].updateArgList(p[1], 'place', nameTemp)
 
 def p_identifier_rep(p):
     '''IdentifierRep : IdentifierRep COMMA IDENTIFIER
@@ -341,20 +362,31 @@ def p_identifier_rep(p):
             raise NameError("Name " + p[3] + " already exists, can't redefine")
         else:
             scopeDict[currScope].insert(p[3], None)
+            nameTemp = newTemp()
+            scopeDict[currScope].updateArgList(p[3], 'place', nameTemp)
+
+
     else:
-        p[0] = ["IdentifierRep", p[1]]
+        p[0] = p[1]
 
 def p_expr_list(p):
     '''ExpressionList : Expression ExpressionRep'''
-    p[0] = ["ExpressionList", p[1], p[2]]
+    #p[0] = ["ExpressionList", p[1], p[2]]
+    p[0] = p[2]
+    p[0].code = p[1].code+p[0].code
+    p[0].placelist = p[1].placelist + p[0].placelist
 
 def p_expr_rep(p):
     '''ExpressionRep : ExpressionRep COMMA Expression
                      | epsilon'''
     if len(p) == 4:
-        p[0] = ["ExpressionRep", p[1], ',', p[3]]
+    	p[0] = p[1]
+    	p[0].code += p[3].code
+    	p[0].placelist += p[3].placelist
+    	# TODO
+    	# p[0].typelist += p[3].typelist
     else:
-        p[0] = ["ExpressionRep", p[1]]
+    	p[0] = p[1]
 # -------------------------------------------------------
 
 
@@ -406,45 +438,62 @@ def p_var_decl(p):
     '''VarDecl : VAR VarSpec
                | VAR LPAREN VarSpecRep RPAREN'''
     if len(p) == 3:
-        p[0] = ["VarDecl", "var", p[2]]
+        p[0] = p[2]
     else:
-        p[0] = ["VarDecl", "var", "(", p[3], ")"]
+        p[0] = p[3]
 
 def p_var_spec_rep(p):
     '''VarSpecRep : VarSpecRep VarSpec SEMICOLON
                   | epsilon'''
     if len(p) == 4:
-        p[0] = ["VarSpecRep", p[1], p[2], ";"]
+        p[0] = p[1]
+        p[0].code += p[2].code
     else:
-#        p[0] = p[1]
-        p[0] = ["VarSpecRep", p[1]]
+        p[0] = p[1]
 
 def p_var_spec(p):
     '''VarSpec : IdentifierList Type ExpressionListOpt
                | IdentifierList ASSIGN ExpressionList'''
     if p[2] == '=':
-        '''
-      p[0] = Node()
-      if(len(p[1].code) != len(p[2].code)):
-        print "Error: mismatch in number of identifiers and expressions for asisgnment"
-        sys.exit()
+        p[0] = Node()
+        p[0].code = p[1].code + p[3].code
 
-      p[0].code = p[1].code
-      for i in range(0, len(p[2])):
-        p[0].code.append(["=",p[1].code[i][1],p[2][i].place])
-      pass
-        '''
-        p[0] = ["VarSpec", p[1], "=", p[3]]
+        if(len(p[1].placelist) != len(p[3].placelist)):
+    	    print len(p[1].placelist), len(p[3].placelist)
+            raise ValueError("Error: mismatch in number of identifiers and expressions for asisgnment")
+
+        for x in range(len(p[1].placelist)):
+            #p[0].code.append(["=", p[1].placelist[x], p[3].placelist[x]])
+            p[1].placelist[x] = p[3].placelist[x]
+            scope = findScope(p[1].idList[x])
+            scopeDict[scope].updateArgList(p[1].idList[x], 'place', p[1].placelist[x])
     else:
-        p[0] = ["VarSpec", p[1], p[2], p[3]]
+    	# TODO update type
+        if len(p[3].placelist) == 0:
+            p[0] = p[1]
+            return
+
+        p[0] = Node()
+        p[0].code = p[1].code + p[3].code
+
+        if(len(p[1].placelist) != len(p[3].placelist)):
+    	    print len(p[1].placelist), len(p[3].placelist)
+            raise ValueError("Error: mismatch in number of identifiers and expressions for asisgnment")
+
+        for x in range(len(p[1].placelist)):
+            #p[0].code.append(["=", p[1].placelist[x], p[3].placelist[x]])
+            p[1].placelist[x] = p[3].placelist[x]
+            scope = findScope(p[1].idList[x])
+            scopeDict[scope].updateArgList(p[1].idList[x], 'place', p[1].placelist[x])
 
 def p_expr_list_opt(p):
     '''ExpressionListOpt : ASSIGN ExpressionList
                          | epsilon'''
+
     if len(p) == 3:
-        p[0] = ["ExpressionListOpt", "=", p[2]]
+        p[0] = p[2]
     else:
-        p[0] = ["ExpressionListOpt", p[1]]
+        p[0] = p[1]
 # -------------------------------------------------------
 
 
@@ -503,14 +552,14 @@ def p_operand(p):
                | OperandName
                | LPAREN Expression RPAREN'''
     if len(p) == 2:
-        p[0] = ["Operand", p[1]]
+        p[0] = p[1]
     else:
-        p[0] = ["Operand", "(", p[2], ")"]
+        p[0] = p[2]
 
 def p_literal(p):
     '''Literal : BasicLit'''
                #| CompositeLit'''
-    p[0] = ["Literal", p[1]]
+    p[0] = p[1]
 
 def p_basic_lit(p):
     '''BasicLit : INTEGER
@@ -520,13 +569,21 @@ def p_basic_lit(p):
                 | IMAGINARY
                 | RUNE
                 | STRING'''
-    p[0] = ["BasicLit",str(p[1])]
+    p[0] = Node()
+    name = newTemp()
+    p[0].code.append(["=", name, p[1] ])
+    p[0].placelist.append(name)
+    p[0].type = None
+
 
 def p_operand_name(p):
     '''OperandName : IDENTIFIER'''
-    p[0] = ["OperandName", p[1]]
     if not checkId(p[1], "**"):
         raise NameError("Identifier " + p[1] + " not defined")
+    p[0] = Node()
+    info = findInfo(p[1])
+    p[0].placelist.append(info['place'])
+    p[0].type = info['type']
 # ---------------------------------------------------------
 
 
@@ -550,7 +607,8 @@ def p_prim_expr(p):
                    | PrimaryExpr TypeAssertion
                    | PrimaryExpr Arguments'''
     if len(p) == 2:
-        p[0] = ["PrimaryExpr", p[1]]
+        p[0] = p[1]
+
     else:
         p[0] = ["PrimaryExpr", p[1], p[2]]
 
@@ -612,7 +670,8 @@ def p_expr(p):
     if len(p) == 4:
         p[0] = ["Expression", p[1], p[2], p[3]]
     else:
-        p[0] = ["Expression", p[1]]
+        p[0] = p[1]
+
 
 def p_expr_opt(p):
     '''ExpressionOpt : Expression
@@ -624,7 +683,8 @@ def p_unary_expr(p):
                  | UnaryOp UnaryExpr
                  | NOT UnaryExpr'''
     if len(p) == 2:
-        p[0] = ["UnaryExpr", p[1]]
+   		p[0] = p[1]
+
     elif p[1] == "!":
         p[0] = ["UnaryExpr", "!", p[2]]
     else:
@@ -1093,6 +1153,7 @@ def p_import_spec(p):
   else:
     p[0].idList += p[2].idList
 
+
 def p_package_name_dot_opt(p):
   ''' PackageNameDotOpt : DOT
                         | PackageName
@@ -1289,7 +1350,7 @@ def printList(node):
     toPrint = ""
     toPrint += str(lineNo)
     for j in range(0,len(rootNode.code[i])):
-      toPrint += ", " + rootNode.code[i][j]
+      toPrint += ", " + str(rootNode.code[i][j])
 
     print toPrint
     lineNo += 1
@@ -1311,7 +1372,7 @@ result = parser.parse(s)
 #print currScope
 #print scopeDict[1].parent
 # print nonTerminals
-
+# print rootNode.code
 printList(rootNode)
 file_name = file_name.split("/")[-1].split(".")[0] + ".html"
 sys.stdout = open(file_name, "w+")
