@@ -1,4 +1,4 @@
 package main;
 import "fmt";
 import "help";
-var i,j int_t;
+var i,j,k,l int_t;

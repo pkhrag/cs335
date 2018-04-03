@@ -358,14 +358,14 @@ def p_var_spec(p):
     '''VarSpec : IdentifierList Type ExpressionListOpt
                | IdentifierList ASSIGN ExpressionList'''
     if p[2] == '=':
-    #   p[0] = Node()
-    #   if(len(p[1].code) != len(p[2].code) and len(p[2].code != 0)):
-    #     print "Error: mismatch in number of identifiers and expressions for asisgnment"
-    #     sys.exit()
+      p[0] = Node()
+      if(len(p[1].code) != len(p[2].code)):
+        print "Error: mismatch in number of identifiers and expressions for asisgnment"
+        sys.exit()
 
-    #   p[0].code = p[1].code
-    #   for i in range(0, len(p[2].code)):
-    #     p[0].code.append(["=",p[1].code[i][1],p[2].code[i]])
+      p[0].code = p[1].code
+      for i in range(0, len(p[2])):
+        p[0].code.append(["=",p[1].code[i][1],p[2][i].place])
       pass
 
 
@@ -1005,7 +1005,7 @@ def p_toplevel_decl_rep(p):
 def p_package_clause(p):
     '''PackageClause : PACKAGE PackageName'''
     # p[0] = ["PackageClause", "package", p[2]]
-    p[0] = Node()
+    p[0] = p[2]
     p[0].code = [["package",str(p[2].val)]]
 
 
