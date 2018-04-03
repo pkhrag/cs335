@@ -5,3 +5,9 @@ import (
     "fmttt";
     "heyaaa";
 );
+
+const t int_t = 3;
+var i int_t = 5;
+var (
+    l = t*i + i + i[1] ;
+);

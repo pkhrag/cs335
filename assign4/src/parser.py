@@ -172,7 +172,7 @@ def p_type_lit(p):
 def p_type_opt(p):
     '''TypeOpt : Type
                | epsilon'''
-    p[0] = ["TypeOpt", p[1]]
+    p[0] = p[1]
 # -------------------------------------------------------
 
 
@@ -186,11 +186,11 @@ def p_array_type(p):
 
 def p_array_length(p):
   ''' ArrayLength : Expression '''
-  p[0] = ["ArrayLength", p[1]]
+  p[0] = p[1]
 
 def p_element_type(p):
   ''' ElementType : Type '''
-  p[0] = ["ElementType", p[1]]
+  p[0] = p[1]
 
 # --------------------------------------------------------
 
@@ -800,7 +800,7 @@ def p_simple_stmt(p):
                  | IncDecStmt
                  | Assignment
                  | ShortVarDecl '''
-  p[0] = ["SimpleStmt", p[1]]
+  p[0] = p[1]
 
 
 def p_labeled_statements(p):
@@ -818,20 +818,25 @@ def p_label(p):
 
 def p_expression_stmt(p):
   ''' ExpressionStmt : Expression '''
-  p[0] = ["ExpressionStmt", p[1]]
+  p[0] = Node()
+  p[0].code = p[1].code
 
 def p_inc_dec(p):
   ''' IncDecStmt : Expression INCR
                  | Expression DECR '''
-  if p[2] == '++':
-    p[0] = ["IncDecStmt", p[1], "++"]
-  else:
-    p[0] = ["IncDecStmt", p[1], "--"]
-
+  p[0] = Node()
+  p[0].code = p[1].code
+  p[0].code.append([p[2], p[1].placelist[0]])
 
 def p_assignment(p):
   ''' Assignment : ExpressionList assign_op ExpressionList'''
-  p[0] = ["Assignment", p[1], p[2], p[3]]
+  if len(p[1].placelist) != len(p[3].placelist):
+      raise ValueError("Number of expressions are not equal")
+  p[0] = Node()
+  p[0].code = p[1].code
+  p[0].code += p[3].code
+  for x in range(len(p[1].placelist)):
+      p[0].code.append([p[2][1][1]], p[1].placelist[x], p[3].placelist[x])
 
 def p_assign_op(p):
   ''' assign_op : AssignOp'''
@@ -859,10 +864,7 @@ def p_if_statement(p):
 def p_SimpleStmtOpt(p):
   ''' SimpleStmtOpt : SimpleStmt SEMICOLON
                     | epsilon '''
-  if len(p) == 3:
-    p[0] = ["SimpleStmtOpt", p[1], ";"]
-  else :
-    p[0] = ["SimpleStmtOpt", p[1]]
+  p[0] = p[1]
 
 def p_else_opt(p):
   ''' ElseOpt : ELSE IfStmt
