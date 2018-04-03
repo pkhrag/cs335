@@ -15,13 +15,18 @@ scopeSeq = 0
 varSeq = 0
 firstFunc = True
 labelSeq = 1
+labelDict = {}
 
 def checkId(identifier, typeOf):
     if typeOf == "*":
         if scopeDict[currScope].getInfo(identifier) is not None:
-            info = scopeDict[currScope].getInfo(identifier)
             return True
         return False
+
+    if typeOf == "label":
+    	if scopeDict[0].getInfo(identifier) is not None:
+    		return True
+    	return False
 
     if typeOf == "*!s":
         if scopeDict[currScope].getInfo(identifier) is not None:
@@ -30,12 +35,13 @@ def checkId(identifier, typeOf):
                 return True
         return False
 
-
     for scope in scopeStack[::-1]:
         if scopeDict[scope].getInfo(identifier) is not None:
             info = scopeDict[scope].getInfo(identifier)
             if typeOf == "**" or info['type'] == typeOf:
                 return True
+
+
 
     return False
 
@@ -80,7 +86,7 @@ def newLabel():
 
 def findInfo(name):
     for scope in scopeStack[::-1]:
-        if  scopeDict[scope].getInfo(name) is not None:
+        if scopeDict[scope].getInfo(name) is not None:
             info = scopeDict[scope].getInfo(name)
             return info
 
@@ -93,6 +99,11 @@ def findScope(name):
 
     raise NameError("Identifier " + name + " is not defined!")
 
+def findLabel(name):
+	for scope in scopeStack[::-1]:
+		if name in scopeDict[scope].extra:
+			return scopeDict[scope].extra[name]
+	raise ValueError("Not in any loop scope")
 
 # ------------------------------------------------------
 precedence = (
@@ -116,9 +127,8 @@ class Node:
         self.idList = []
         self.code = []
         self.typeList = []
-        self.next = None
         self.placelist = []
-        self.extra = None
+        self.extra = {}
 
 
 
@@ -514,11 +524,15 @@ def p_expr_list_opt(p):
 # ----------------SHORT VARIABLE DECLARATIONS-------------
 def p_short_var_decl(p):
   ''' ShortVarDecl : IDENTIFIER QUICK_ASSIGN Expression '''
-  p[0] = ["ShortVarDecl", p[1], ":=", p[3]]
   if checkId(p[1], "*"):
     raise NameError("Name " + p[1] + " already exists, can't redefine")
   else:
     scopeDict[currScope].insert(p[1], None)
+  p[0] = Node()
+  newVar = newTemp()
+  p[0].code = p[3].code
+  p[0].code.append(['=', newVar, p[3].placelist[0]])
+  scopeDict[currScope].updateArgList(p[1], 'place', newVar)
 # -------------------------------------------------------
 
 
@@ -614,6 +628,7 @@ def p_operand_name(p):
         raise NameError("Identifier " + p[1] + " not defined")
     p[0] = Node()
     info = findInfo(p[1])
+    # print info
     p[0].placelist.append(info['place'])
     p[0].typeList = [info['type']]
 # ---------------------------------------------------------
@@ -823,16 +838,28 @@ def p_simple_stmt(p):
 
 def p_labeled_statements(p):
   ''' LabeledStmt : Label COLON Statement '''
-  p[0] = ["LabeledStmt", p[1], ":", p[3]]
-  #TODO
+  if checkId(p[1][1], "label"):
+    raise NameError("Label " + p[1][1] + " already exists, can't redefine")
+  
+  newl = ''
+  if labelDict[p[1][1]] is not None:
+  	scopeDict[0].insert(p[1][1], "label")
+  	scopeDict[0].updateArgList(p[1][1], 'label', labelDict[p[1][1]][1])
+  	labelDict[p[1][1]][0] = True
+  	newl = labelDict[p[1][1]][1]
+  else:
+  	newl = newLabel()
+  	scopeDict[0].insert(p[1][1], "label")
+  	scopeDict[0].updateArgList(p[1][1], 'label', newl)
+  	labelDict[p[1][1]] = (True, newl)
+  
+  p[0] = p[3]
+  p[0].code = [['label',newl]] + p[0].code
 
 def p_label(p):
   ''' Label : IDENTIFIER '''
   p[0] = ["Label", p[1]]
-  if checkId(p[1], "label"):
-    raise NameError("Label " + p[1] + " already exists, can't redefine")
-  else:
-    scopeDict[0].insert(p[1], "label")
+  
 
 
 def p_expression_stmt(p):
@@ -877,9 +904,21 @@ def p_AssignOp(p):
 
 
 def p_if_statement(p):
-  ''' IfStmt : IF Expression CreateScope Block EndScope ElseOpt '''
-  p[0] = ["IfStmt", "if", p[2], p[4], p[6]]
-  #TODO
+  ''' IfStmt : IF Expression CreateScope Block EndScope ElseOpt'''
+  p[0] = Node()
+  p[0].code = p[2].code
+  label1 = newLabel()
+  newVar = newTemp()
+  p[0].code += [['!', newVar, p[2].placelist[0]]]
+  p[0].code += [['ifgoto',newVar, label1]]
+  p[0].code += p[4].code
+  label2 = newLabel()
+  p[0].code += [['goto', label2]]
+  p[0].code += [['label', label1]]
+  p[0].code += p[6].code
+  p[0].code += [['label', label2]]
+
+
 
 def p_SimpleStmtOpt(p):
   ''' SimpleStmtOpt : SimpleStmt SEMICOLON
@@ -890,13 +929,13 @@ def p_else_opt(p):
   ''' ElseOpt : ELSE IfStmt
               | ELSE CreateScope Block EndScope
               | epsilon '''
-  #TODO
+  
   if len(p) == 3:
-    p[0] = ["ElseOpt", "else", p[2]]
+    p[0] = p[2]
   elif len(p) == 5:
-    p[0] = ["ElseOpt", "else", p[3]]
+    p[0] = p[3]
   else:
-    p[0] = ["ElseOpt", p[1]]
+    p[0] = p[1]
 
 # ----------------------------------------------------------------
 
@@ -993,67 +1032,53 @@ def p_type_rep(p):
 
 
 
-
-
 # --------- FOR STATEMENTS AND OTHERS (MANDAL) ---------------
 def p_for(p):
   '''ForStmt : FOR CreateScope ConditionBlockOpt Block EndScope'''
-  p[0] = ["ForStmt", "for", p[3], p[4]]
+  p[0] = Node()
+  label1 = p[3].extra['before']
+  p[0].code = p[3].code+p[4].code
+  p[0].code += [['goto', label1]]
+  label2 = p[3].extra['after']
+  p[0].code += [['label', label2]]
+
 
 def p_conditionblockopt(p):
   '''ConditionBlockOpt : epsilon
              | Condition
-             | ForClause
-             | RangeClause'''
-  p[0] = ["ConditionBlockOpt", p[1]]
+             | ForClause'''
+             # | RangeClause'''
+  p[0] = p[1]
 
 def p_condition(p):
   '''Condition : Expression '''
-  p[0] = ["Condition", p[1]]
+  p[0] = p[1]
 
 def p_forclause(p):
   '''ForClause : SimpleStmt SEMICOLON ConditionOpt SEMICOLON SimpleStmt'''
-  p[0] = ["ForClause", p[1], ";", p[3], ";", p[5]]
+  p[0] = p[1]
+  label1 = newLabel()
+  p[0].code += [['label', label1]]
+  p[0].extra['before'] = label1
+  p[0].code += p[3].code
+  label2 = newLabel()
+  scopeDict[currScope].updateExtra('beginFor',label1)
+  scopeDict[currScope].updateExtra('endFor',label2)
 
-# def p_initstmtopt(p):
-#   '''InitStmtOpt : epsilon
-#            | InitStmt '''
-#   p[0] = ["InitStmtOpt", p[1]]
+  p[0].extra['after'] = label2
+  if len(p[3].placelist) != 0:
+  	newVar = newTemp()
+  	p[0].code += [['!', newVar, p[3].placelist[0]],['ifgoto', newVar, label2]]
+ 
+  p[0].code += p[5].code
 
-# def p_init_stmt(p):
-#   ''' InitStmt : SimpleStmt'''
-#   p[0] = ["InitStmt", p[1]]
+
 
 
 def p_conditionopt(p):
   '''ConditionOpt : epsilon
           | Condition '''
-  p[0] = ["ConditionOpt", p[1]]
-
-# def p_poststmtopt(p):
-#   '''PostStmtOpt : epsilon
-#            | PostStmt '''
-#   p[0] = ["PostStmtOpt", p[1]]
-
-# def p_post_stmt(p):
-#   ''' PostStmt : SimpleStmt '''
-#   # p[0] = ["PostStmt", p[1]]
-
-def p_rageclause(p):
-  '''RangeClause : ExpressionIdentListOpt RANGE Expression'''
-  p[0] = ["RangeClause", p[1], "range", p[3]]
-
-def p_expression_ident_listopt(p):
-  '''ExpressionIdentListOpt : epsilon
-             | ExpressionIdentifier'''
-  p[0] = ["ExpressionIdentListOpt", p[1]]
-
-def p_expressionidentifier(p):
-  '''ExpressionIdentifier : ExpressionList ASSIGN'''
-  if p[2] == "=":
-    p[0] = ["ExpressionIdentifier", p[1], "="]
-  else:
-    p[0] = ["ExpressionIdentifier", p[1], ":="]
+  p[0] = p[1]
 
 def p_return(p):
   '''ReturnStmt : RETURN ExpressionPureOpt'''
@@ -1070,20 +1095,43 @@ def p_expression_pure_opt(p):
 
 def p_break(p):
   '''BreakStmt : BREAK LabelOpt'''
-  p[0] = ["BreakStmt", "break", p[2]]
+  if type(p[2]) is list:
+  	if p[2][1] not in labelDict:
+  		newl = newLabel()
+  		labelDict[p[2][1]] = (False, newl)
+  	p[0] = Node()
+  	p[0].code = [['goto', labelDict[p[2][1]][1]]]
+  else:
+  	lab = findLabel('endFor')
+  	p[0] = Node()
+  	p[0].code.append(['goto', lab])
 
 def p_continue(p):
   '''ContinueStmt : CONTINUE LabelOpt'''
-  p[0] = ["ContinueStmt", "continue", p[2]]
+  if type(p[2]) is list:
+  	if p[2][1] not in labelDict:
+  		newl = newLabel()
+  		labelDict[p[2][1]] = (False, newl)
+  	p[0] = Node()
+  	p[0].code = [['goto', labelDict[p[2][1]][1]]]
+  else:
+  	lab = findLabel('beginFor')
+  	p[0] = Node()
+  	p[0].code.append(['goto', lab])
 
 def p_labelopt(p):
   '''LabelOpt : Label
         | epsilon '''
-  p[0] = ["LabelOpt", p[1]]
+  p[0] = p[1]
 
 def p_goto(p):
   '''GotoStmt : GOTO Label '''
-  p[0] = ["GotoStmt", "goto", p[2]]
+  if p[2][1] not in labelDict:
+  	newl = newLabel()
+  	labelDict[p[2][1]] = (False, newl)
+  p[0] = Node()
+  p[0].code = [['goto', labelDict[p[2][1]][1]]]
+  
 # -----------------------------------------------------------
 
 
@@ -1383,6 +1431,12 @@ def printList(node):
     lineNo += 1
 
 
+def checkLabel():
+	for x,j in enumerate(labelDict):
+		if labelDict[x][0] == False:
+			raise NameError("Label " + x + " is not defined but is directed using Goto !")
+
+
 try:
   s = data
   print(s)
@@ -1400,6 +1454,7 @@ result = parser.parse(s)
 #print scopeDict[1].parent
 # print nonTerminals
 # print rootNode.code
+checkLabel()
 printList(rootNode)
 file_name = file_name.split("/")[-1].split(".")[0] + ".html"
 sys.stdout = open(file_name, "w+")

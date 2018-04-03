@@ -18,6 +18,15 @@ func hutiya(a int_t, b int_t) int_t {
 };
 
 func main() {
-    i += 3;  
+    i += 3;
+    if i>3 {
+        i+=7;
+    }
+    else{
+        i-=7;
+    };
+	for i := 1; i < 3; i++{
+		var j int_t = 3;
+	};
     return 0;    
 };

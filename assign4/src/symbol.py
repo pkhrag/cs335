@@ -5,6 +5,7 @@ class symbolTable:
         self.table = {}
         self.globalSymbolList = []
         self.parent = None
+        self.extra = {}
 
     # Checks whether "name" lies in the symbol table
     def lookUp(self, name):
@@ -35,4 +36,7 @@ class symbolTable:
 
     def setParent(self, parent):
         self.parent = parent
+
+    def updateExtra(self,key,value):
+        self.extra[key]=value
 
