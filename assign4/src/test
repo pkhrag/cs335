@@ -1,4 +1,4 @@
-package main;
+package math0;
 import "fmt";
 import "heya";
 import (
