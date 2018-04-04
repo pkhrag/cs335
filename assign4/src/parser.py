@@ -946,86 +946,97 @@ def p_else_opt(p):
 # ----------- SWITCH STATEMENTS ---------------------------------
 
 def p_switch_statement(p):
-  ''' SwitchStmt : ExprSwitchStmt
-                 | TypeSwitchStmt '''
-  p[0] = ["SwitchStmt", p[1]]
+  ''' SwitchStmt : ExprSwitchStmt '''
+  p[0] = p[1]
 
 
 def p_expr_switch_stmt(p):
-  ''' ExprSwitchStmt : SWITCH ExpressionOpt LCURL ExprCaseClauseRep RCURL'''
-  p[0] = ["ExpressionStmt", "switch", p[2], p[3], "{", p[5], "}"]
+  ''' ExprSwitchStmt : SWITCH Expression CreateScope LCURL StartSwitch ExprCaseClauseRep RCURL EndScope '''
+  p[0] = p[2]
+  defaultLabel = None
+  labnew = newLabel()
+  p[0].code += [['goto', labnew]]
+  p[0].code += p[6].code
+  p[0].code += [['label', labnew]]
+  p[0].code += p[6].extra['exprList']
+
+  for i in range(len(p[6].extra['labelList'])):
+
+    if p[6].extra['labelType'][i] == 'default':
+        defaultLabel = p[6].extra['labelList'][i]
+    else:
+        varNew = newTemp()
+        p[0].code +=  [['==', varNew, p[2].placelist[0], p[6].placelist[i]]]
+        p[0].code += [['ifgoto', varNew, p[6].extra['labelList'][i]]]
+
+  if defaultLabel is not None:
+      p[0].code += [['goto', defaultLabel]]
+      
+
+  else:
+      l = newLabel()
+      p[0].code += [['goto', l]]
+      p[0].code += [['label', l]]
+  
+  p[0].code += [['label', p[5].extra['end']]]
+
+def p_start_switch(p):
+    ''' StartSwitch : '''
+    p[0] = Node()
+    label2 = newLabel()
+    scopeDict[currScope].updateExtra('endFor',label2);
+    p[0].extra['end'] = label2
+
+
+      
 
 def p_expr_case_clause_rep(p):
   ''' ExprCaseClauseRep : ExprCaseClauseRep ExprCaseClause
                         | epsilon'''
   if len(p) == 3:
-    p[0] = ["ExprCaseClauseRep", p[1], p[2]]
+    p[0] = p[1]
+    p[0].code += p[2].code
+    p[0].placelist += p[2].placelist
+    p[0].extra['labelList'] += p[2].extra['labelList']
+    p[0].extra['labelType'] += p[2].extra['labelType']
+    p[0].extra['exprList'] += p[2].extra['exprList']
+
+     
   else:
-    p[0] = ["ExprCaseClauseRep", p[1]]
+    p[0] = p[1]
+    p[0].extra['labelList'] = []
+    p[0].extra['labelType'] = []
+    p[0].extra['exprList'] = [[]] 
+
+
 
 def p_expr_case_clause(p):
-  ''' ExprCaseClause : ExprSwitchCase COLON StatementList'''
-  p[0] = ["ExprCaseClause", p[1], ":", p[3]]
+  ''' ExprCaseClause : ExprSwitchCase COLON StatementList '''
+  p[0] = Node()
+  label = newLabel()
+  p[0].code = [['label', label]]
+  p[0].code += p[3].code
+  p[0].extra['labelList'] = [label]
+  lab = findLabel('endFor')
+  p[0].code.append(['goto', lab])
+  p[0].extra['exprList'] = p[1].extra['exprList']
+  p[0].placelist = p[1].placelist
+  p[0].extra['labelType'] = p[1].extra['labelType']
+
 
 def p_expr_switch_case(p):
-  ''' ExprSwitchCase : CASE ExpressionList
+  ''' ExprSwitchCase : CASE Expression
                      | DEFAULT '''
   if len(p) == 3:
-    p[0] = ["ExprSwitchCase", "case", p[2]]
+    p[0] = p[2]
+    p[0].extra['labelType'] = ['case']
+    p[0].extra['exprList'] = p[2].code
+
   else:
-    p[0] = ["ExprSwitchCase", p[1]]
-
-def p_type_switch_stmt(p):
-  ''' TypeSwitchStmt : SWITCH SimpleStmtOpt TypeSwitchGuard LCURL TypeCaseClauseOpt RCURL'''
-  p[0] = ["TypeSwitchStmt", "switch", p[2], p[3],"{", p[5], "}"]
-
-
-def p_type_switch_guard(p):
-  ''' TypeSwitchGuard : IdentifierOpt PrimaryExpr DOT LPAREN TYPE RPAREN '''
-
-  p[0] = ["TypeSwitchGuard", p[1], p[2], ".", "(", "type", ")"]
-
-def p_identifier_opt(p):
-  ''' IdentifierOpt : IDENTIFIER QUICK_ASSIGN
-                    | epsilon '''
-  #TODO
-  if len(p) == 3:
-    p[0] = ["IdentifierOpt", p[1], ":="]
-  else:
-    p[0] = ["IdentifierOpt", p[1]]
-
-def p_type_case_clause_opt(p):
-  ''' TypeCaseClauseOpt : TypeCaseClauseOpt TypeCaseClause
-                        | epsilon '''
-  if len(p) == 3:
-    p[0] = ["TypeCaseClauseOpt", p[1], p[2]]
-  else:
-    p[0] = ["TypeCaseClauseOpt", p[1]]
-
-def p_type_case_clause(p):
-  ''' TypeCaseClause : TypeSwitchCase COLON StatementList'''
-  p[0] = ["TypeCaseClause", p[1], ":", p[3]]
-
-
-def p_type_switch_case(p):
-  ''' TypeSwitchCase : CASE TypeList
-                     | DEFAULT '''
-  if len(p) == 3:
-    p[0] = ["TypeSwitchCase", p[1], p[2]]
-  else:
-    p[0] = ["TypeSwitchCase", p[1]]
-
-def p_type_list(p):
-  ''' TypeList : Type TypeRep'''
-  p[0] = ["TypeList", p[1], p[2]]
-
-def p_type_rep(p):
-  ''' TypeRep : TypeRep COMMA Type
-              | epsilon '''
-  if len(p) == 4:
-    p[0] = ["TypeRep", p[1], ",", p[3]]
-  else:
-    p[0] = ["TypeRep", p[1]]
+    p[0] = Node()
+    p[0].extra['labelType'] = ['default']
+    p[0].placelist = ['heya']
+    p[0].extra['exprList'] = [[]]
 
 # -----------------------------------------------------------
 
@@ -1422,13 +1433,14 @@ lineNo = 1
 def printList(node):
   global lineNo
   for i in range(0,len(rootNode.code)):
-    toPrint = ""
-    toPrint += str(lineNo)
-    for j in range(0,len(rootNode.code[i])):
-      toPrint += ", " + str(rootNode.code[i][j])
+    if len(rootNode.code[i]) > 0:
+        toPrint = ""
+        toPrint += str(lineNo)
+        for j in range(0,len(rootNode.code[i])):
+          toPrint += ", " + str(rootNode.code[i][j])
 
-    print toPrint
-    lineNo += 1
+        print toPrint
+        lineNo += 1
 
 
 def checkLabel():
