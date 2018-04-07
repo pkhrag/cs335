@@ -628,8 +628,11 @@ def p_operand_name(p):
         raise NameError("Identifier " + p[1] + " not defined")
     p[0] = Node()
     info = findInfo(p[1])
-    # print info
-    p[0].placelist.append(info['place'])
+    #print info
+    if info['type'] == 'func':
+        p[0].placelist.append(info['label'])
+    else:
+        p[0].placelist.append(info['place'])
     p[0].typeList = [info['type']]
 # ---------------------------------------------------------
 
@@ -659,6 +662,7 @@ def p_prim_expr(p):
         p[0] = p[1]
         p[0].code += p[3].code
         newPlace = newTemp()
+        #TODO multiply with size first
         p[0].code.append(['+', newPlace, p[0].placelist[0], p[3].placelist[0]])
         newPlace2 = newTemp()
         p[0].code.append(['*', newPlace2, newPlace])
@@ -666,8 +670,15 @@ def p_prim_expr(p):
 
         #TODO type of p[0] needs to be updated
     elif p[2] == '(':
-        #TODO function
-        pass
+        p[0] = p[1]
+        p[0].code += p[3].code
+        if len(p[3].placelist):
+            for x in p[3].placelist:
+                p[0].code.append(['param', x])
+        #TODO check type and call accordingly
+        print p[0].code
+        p[0].code.append(['callvoid', p[1].placelist[0]])
+        #TODO
     else:
         p[0] = ["PrimaryExpr", p[1], p[2]]
 
@@ -840,7 +851,7 @@ def p_labeled_statements(p):
   ''' LabeledStmt : Label COLON Statement '''
   if checkId(p[1][1], "label"):
     raise NameError("Label " + p[1][1] + " already exists, can't redefine")
-  
+
   newl = ''
   if p[1][1] in labelDict:
   	scopeDict[0].insert(p[1][1], "label")
@@ -852,14 +863,14 @@ def p_labeled_statements(p):
   	scopeDict[0].insert(p[1][1], "label")
   	scopeDict[0].updateArgList(p[1][1], 'label', newl)
   	labelDict[p[1][1]] = [True, newl]
-  
+
   p[0] = p[3]
   p[0].code = [['label',newl]] + p[0].code
 
 def p_label(p):
   ''' Label : IDENTIFIER '''
   p[0] = ["Label", p[1]]
-  
+
 
 
 def p_expression_stmt(p):
@@ -929,7 +940,7 @@ def p_else_opt(p):
   ''' ElseOpt : ELSE IfStmt
               | ELSE CreateScope Block EndScope
               | epsilon '''
-  
+
   if len(p) == 3:
     p[0] = p[2]
   elif len(p) == 5:
@@ -971,13 +982,13 @@ def p_expr_switch_stmt(p):
 
   if defaultLabel is not None:
       p[0].code += [['goto', defaultLabel]]
-      
+
 
   else:
       l = newLabel()
       p[0].code += [['goto', l]]
       p[0].code += [['label', l]]
-  
+
   p[0].code += [['label', p[5].extra['end']]]
 
 def p_start_switch(p):
@@ -988,7 +999,7 @@ def p_start_switch(p):
     p[0].extra['end'] = label2
 
 
-      
+
 
 def p_expr_case_clause_rep(p):
   ''' ExprCaseClauseRep : ExprCaseClauseRep ExprCaseClause
@@ -1001,12 +1012,12 @@ def p_expr_case_clause_rep(p):
     p[0].extra['labelType'] += p[2].extra['labelType']
     p[0].extra['exprList'] += p[2].extra['exprList']
 
-     
+
   else:
     p[0] = p[1]
     p[0].extra['labelList'] = []
     p[0].extra['labelType'] = []
-    p[0].extra['exprList'] = [[]] 
+    p[0].extra['exprList'] = [[]]
 
 
 
@@ -1080,7 +1091,7 @@ def p_forclause(p):
   if len(p[3].placelist) != 0:
   	newVar = newTemp()
   	p[0].code += [['!', newVar, p[3].placelist[0]],['ifgoto', newVar, label2]]
- 
+
   p[0].code += p[5].code
 
 
@@ -1142,7 +1153,7 @@ def p_goto(p):
   	labelDict[p[2][1]] = [False, newl]
   p[0] = Node()
   p[0].code = [['goto', labelDict[p[2][1]][1]]]
-  
+
 # -----------------------------------------------------------
 
 

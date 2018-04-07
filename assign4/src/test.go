@@ -12,15 +12,16 @@ var (
     l = t*i + i + i[1] ;
 );
 
-func hutiya(a int_t, b int_t) int_t {
+func hutiya(a int_t, b int_t) {
     var i int_t = 4+3;
     return a;
 };
 
 func main() {
     i += 3;
+	hutiya(3,1);
 	lsls :
-	goto dsds;
+/*	goto dsds;
     if i>3 {
         i+=7;
     }
@@ -33,6 +34,6 @@ func main() {
 			break lsls;
 		};
 	};
-	dsds : 
+	dsds : */
     return 0;    
 };
