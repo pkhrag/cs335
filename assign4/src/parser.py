@@ -185,10 +185,11 @@ def p_type_token(p):
         p[0] = Node()
         p[0].typeList.append(p[1])
     else:
-        if not checkId(p[2], 'type'+p[2]):
+        if not checkId(p[2], '**'):
             raise TypeError("Typename " + p[2] + " not defined")
         p[0] = Node()
         info = findInfo(p[2], 0)
+        # print info['type']
         p[0].typeList.append(info['type'])
 
 def p_type_lit(p):
@@ -229,6 +230,8 @@ def p_element_type(p):
 def p_struct_type(p):
   '''StructType : CreateFuncScope STRUCT LCURL FieldDeclRep RCURL EndScope'''
   p[0] = p[4]
+  info = findInfo(p[-1], 0)
+  p[0].typeList = [info['type']]
 
 def p_field_decl_rep(p):
   ''' FieldDeclRep : FieldDeclRep FieldDecl SEMICOLON
@@ -454,7 +457,9 @@ def p_type_def(p):
     if checkId(p[1], "*!s"):
         raise NameError("Name " + p[1] + " already exists, can't redefine")
     else:
+        # print p[2].typeList
         scopeDict[currScope].insert(p[1], p[2].typeList[0])
+        # print findInfo(p[1])
     p[0] = Node()
 # -------------------------------------------------------
 
