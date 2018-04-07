@@ -17,6 +17,7 @@ firstFunc = True
 labelSeq = 1
 labelDict = {}
 
+
 def checkId(identifier, typeOf):
     if typeOf == "*":
         if scopeDict[currScope].getInfo(identifier) is not None:
@@ -31,7 +32,7 @@ def checkId(identifier, typeOf):
     if typeOf == "*!s":
         if scopeDict[currScope].getInfo(identifier) is not None:
             info = scopeDict[currScope].getInfo(identifier)
-            if info['type'] is not 'type':
+            if info['type'] != ('type'+identifier):
                 return True
         return False
 
@@ -40,8 +41,6 @@ def checkId(identifier, typeOf):
             info = scopeDict[scope].getInfo(identifier)
             if typeOf == "**" or info['type'] == typeOf:
                 return True
-
-
 
     return False
 
@@ -60,9 +59,12 @@ def addScope(name=None):
             scopeDict[lastScope].insert(name[1], 'func')
             scopeDict[lastScope].updateArgList(name[1], 'child', scopeDict[currScope])
         else:
+            temp = currScope
+            currScope = lastScope
             if checkId(name, '*'):
                 raise NameError("Name " + name + " already defined")
-            scopeDict[lastScope].insert(name, 'type')
+            currScope = temp
+            scopeDict[lastScope].insert(name, 'type'+name)
             scopeDict[lastScope].updateArgList(name, 'child', scopeDict[currScope])
 
 
@@ -84,7 +86,12 @@ def newLabel():
     return toret
 
 
-def findInfo(name):
+def findInfo(name, Scope=-1):
+    if Scope > -1:
+        if scopeDict[Scope].getInfo(name) is not None:
+            return scopeDict[Scope].getInfo(name)
+        raise NameError("Identifier " + name + " is not defined!")
+
     for scope in scopeStack[::-1]:
         if scopeDict[scope].getInfo(name) is not None:
             info = scopeDict[scope].getInfo(name)
@@ -156,14 +163,14 @@ def p_type(p):
             | TypeLit
             | LPAREN Type RPAREN'''
     if len(p) == 4:
-        p[0] = ["Type", "(", p[2], ")"]
+        p[0] = p[2]
     else:
-        p[0] = ["Type", p[1]]
+        p[0] = p[1]
 
 def p_type_name(p):
     '''TypeName : TypeToken
                 | QualifiedIdent'''
-    p[0] = ["TypeName", p[1]]
+    p[0] = p[1]
 
 def p_type_token(p):
     '''TypeToken : INT_T
@@ -175,17 +182,20 @@ def p_type_token(p):
                  | STRING_T
                  | TYPE IDENTIFIER'''
     if len(p) == 2:
-        p[0] = ["TypeToken", p[1]]
+        p[0] = Node()
+        p[0].typeList.append(p[1])
     else:
-        if not checkId(p[2], p[1]):
+        if not checkId(p[2], 'type'+p[2]):
             raise TypeError("Typename " + p[2] + " not defined")
-        p[0] = ["TypeToken", p[1], p[2]]
+        p[0] = Node()
+        info = findInfo(p[2], 0)
+        p[0].typeList.append(info['type'])
 
 def p_type_lit(p):
     '''TypeLit : ArrayType
                | StructType
                | PointerType'''
-    p[0] = ["TypeLit", p[1]]
+    p[0] = p[1]
 
 def p_type_opt(p):
     '''TypeOpt : Type
@@ -200,7 +210,9 @@ def p_type_opt(p):
 # ------------------- ARRAY TYPE -------------------------
 def p_array_type(p):
   '''ArrayType : LSQUARE ArrayLength RSQUARE ElementType'''
-  p[0] = ["ArrayType", "[", p[2], "]", p[4]]
+  p[0] = Node()
+  p[0].code = p[2].code
+  p[0].typeList.append("*" + p[4].typeList[0])
 
 def p_array_length(p):
   ''' ArrayLength : Expression '''
@@ -216,39 +228,36 @@ def p_element_type(p):
 # ----------------- STRUCT TYPE ---------------------------
 def p_struct_type(p):
   '''StructType : CreateFuncScope STRUCT LCURL FieldDeclRep RCURL EndScope'''
-  p[0] = ["StructType", "struct", "{", p[4], "}"]
+  p[0] = p[4]
 
 def p_field_decl_rep(p):
   ''' FieldDeclRep : FieldDeclRep FieldDecl SEMICOLON
                   | epsilon '''
   if len(p) == 4:
-    p[0] = ["FieldDeclRep", p[1], p[2], ";"]
+    # Useless for now
+    p[0] = p[1]
+    p[0].idList += p[2].idList
+    p[0].typeList += p[2].typeList
   else:
-    p[0] = ["FieldDeclRep", p[1]]
+    p[0] = p[1]
 
 def p_field_decl(p):
-  ''' FieldDecl : IdentifierList Type TagOpt'''
-  p[0] = ["FieldDecl", p[1], p[2], p[3]]
-
-def p_TagOpt(p):
-  ''' TagOpt : Tag
-             | epsilon '''
-  p[0] = ["TagOpt", p[1]]
-
-def p_Tag(p):
-  ''' Tag : STRING '''
-  p[0] = ["Tag", p[1]]
+  ''' FieldDecl : IdentifierList Type'''
+  p[0] = p[1]
+  for i in p[0].idList:
+    scopeDict[currScope].updateArgList(i, 'type', p[2].typeList[0])
 # ---------------------------------------------------------
 
 
 # ------------------POINTER TYPES--------------------------
 def p_point_type(p):
     '''PointerType : STAR BaseType'''
-    p[0] = ["PointerType", "*", p[2]]
+    p[0] = p[2]
+    p[0].typeList[0] = "*"+p[0].typeList[0]
 
 def p_base_type(p):
     '''BaseType : Type'''
-    p[0] = ["BaseType", p[1]]
+    p[0] = p[1]
 # ---------------------------------------------------------
 
 
@@ -358,7 +367,11 @@ def p_const_spec(p):
         scope = findScope(p[1].idList[x])
         scopeDict[scope].updateArgList(p[1].idList[x], 'place', p[1].placelist[x])
 
-    #TODO insert type in symbol table
+        # type insertion
+        scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[2].typeList[0])
+
+
+    #TODO type checking
 
 def p_identifier_list(p):
     '''IdentifierList : IDENTIFIER IdentifierRep'''
@@ -416,41 +429,33 @@ def p_type_decl(p):
     '''TypeDecl : TYPE TypeSpec
                 | TYPE LPAREN TypeSpecRep RPAREN'''
     if len(p) == 5:
-        p[0] = ["TypeDecl", "type", "(", p[3], ")"]
+        p[0] = p[3]
     else:
-        p[0] = ["TypeDecl", "type", p[2]]
+        p[0] = p[2]
+        # p[0] = ["TypeDecl", "type", p[2]]
 
 def p_type_spec_rep(p):
     '''TypeSpecRep : TypeSpecRep TypeSpec SEMICOLON
                    | epsilon'''
     if len(p) == 4:
-        p[0] = ["TypeSpecRep", p[1], p[2], ";"]
+        p[0] = Node()
     else:
-        p[0] = ["TypeSpecRep", p[1]]
+        p[0] = p[1]
 
 def p_type_spec(p):
-    '''TypeSpec : AliasDecl
-                | TypeDef'''
-    p[0] = ["TypeSpec", p[1]]
-
-def p_alias_decl(p):
-    '''AliasDecl : IDENTIFIER ASSIGN Type'''
-    p[0] = ["AliasDecl", p[1], '=', p[3]]
-    if checkId(p[1], "*"):
-        raise NameError("Name " + p[1] + " already exists, can't redefine")
-    else:
-        scopeDict[currScope].insert(p[1], None)
+    '''TypeSpec : TypeDef'''
+    p[0] = p[1]
 # -------------------------------------------------------
 
 
 # -------------------TYPE DEFINITIONS--------------------
 def p_type_def(p):
     '''TypeDef : IDENTIFIER Type'''
-    p[0] = ["TypeDef", p[1], p[2]]
     if checkId(p[1], "*!s"):
         raise NameError("Name " + p[1] + " already exists, can't redefine")
     else:
-        scopeDict[currScope].insert(p[1], None)
+        scopeDict[currScope].insert(p[1], p[2].typeList[0])
+    p[0] = Node()
 # -------------------------------------------------------
 
 
@@ -487,13 +492,15 @@ def p_var_spec(p):
                 p[0].code.append(["=", p[1].placelist[x], p[3].placelist[x]])
             p[1].placelist[x] = p[3].placelist[x]
 
-            #TODO typelist check required
             scope = findScope(p[1].idList[x])
             scopeDict[scope].updateArgList(p[1].idList[x], 'place', p[1].placelist[x])
+            scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[3].typeList[x])
     else:
-    	# TODO update type
         if len(p[3].placelist) == 0:
             p[0] = p[1]
+            for x in range(len(p[1].idList)):
+                scope = findScope(p[1].idList[x])
+                scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[2].typeList[0])
             return
 
         p[0] = Node()
@@ -509,6 +516,7 @@ def p_var_spec(p):
             #TODO typelist check required
             scope = findScope(p[1].idList[x])
             scopeDict[scope].updateArgList(p[1].idList[x], 'place', p[1].placelist[x])
+            scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[2].typeList[0])
 
 def p_expr_list_opt(p):
     '''ExpressionListOpt : ASSIGN ExpressionList
@@ -533,11 +541,13 @@ def p_short_var_decl(p):
   p[0].code = p[3].code
   p[0].code.append(['=', newVar, p[3].placelist[0]])
   scopeDict[currScope].updateArgList(p[1], 'place', newVar)
+  scopeDict[currScope].updateArgList(p[1], 'type', p[3].typeList[0])
 # -------------------------------------------------------
 
 
 
 # ----------------FUNCTION DECLARATIONS------------------
+#TODO type also
 def p_func_decl(p):
     '''FunctionDecl : FUNC FunctionName CreateFuncScope Function EndScope
                     | FUNC FunctionName CreateFuncScope Signature EndScope'''
@@ -591,7 +601,7 @@ def p_func_body(p):
     p[0] = p[1]
 # -------------------------------------------------------
 
-
+#TODO type insertion here onwards
 # ----------------------OPERAND----------------------------
 def p_operand(p):
     '''Operand : Literal
@@ -640,9 +650,10 @@ def p_operand_name(p):
 # -------------------QUALIFIED IDENTIFIER----------------
 def p_quali_ident(p):
     '''QualifiedIdent : IDENTIFIER DOT TypeName'''
-    p[0] = ["QualifiedIdent", p[1], ".", p[3]]
     if not checkId(p[1], "package"):
         raise NameError("Package " + p[1] + " not included")
+    p[0] = Node()
+    p[0].typeList.append(p[1]+p[2]+p[3].typeList[0])
 
 # -------------------------------------------------------
 
@@ -753,7 +764,7 @@ def p_expr(p):
             p[0].code.append([p[2],newPlace,p[1].placelist[0], p[3].placelist[0] ])
         p[0].placelist = [newPlace]
 
-        #TODO typechecking based on typelist
+        #TODO typechecking based on typeList
 
     else:
         p[0] = p[1]
