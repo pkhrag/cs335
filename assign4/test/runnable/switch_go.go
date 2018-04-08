@@ -1,10 +1,10 @@
-package main;
+package maid;
 import "fmt";
 
 func main() {
 	var wflg, tflg int_t = 0, 0;
 	var dflg int_t = 0;
-	var c rune_t;
+	var c rune_t = 'w';
 	switch (c)
 	{
 	case 'w':
@@ -19,4 +19,5 @@ func main() {
 		dflg = 1;
 		break;
 	};
+	print wflg;
 };

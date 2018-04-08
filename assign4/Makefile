@@ -6,3 +6,4 @@ all:
 
 clean:
 	@rm -rf bin
+	@rm output*
