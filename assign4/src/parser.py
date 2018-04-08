@@ -51,6 +51,7 @@ def checkId(identifier, typeOf):
 
 
 def addScope(name=None):
+
     global scopeSeq
     global currScope
     scopeSeq += 1
@@ -270,12 +271,25 @@ def p_base_type(p):
 
 
 # ---------------FUNCTION TYPES----------------------------
-#TODO
+#TODO recursion
 def p_sign(p):
     '''Signature : Parameters TypeOpt'''
-    p[0] = p[2]
-    # print p[-2][1]
-    
+    p[0] = p[1]
+
+
+    scopeDict[0].insert(p[-2][1],'signatureType')
+    if len(p[2].typeList) == 0:
+        scopeDict[0].updateArgList(p[-2][1], 'retType', 'void')
+    else:
+        scopeDict[0].updateArgList(p[-2][1], 'retType', p[2].typeList[0])
+
+    info = findInfo(p[-2][1],0)
+    if 'label' not in info:
+        labeln = newLabel()
+        scopeDict[0].updateArgList(p[-2][1], 'label', labeln) 
+        scopeDict[0].updateArgList(p[-2][1], 'child', scopeDict[currScope])
+
+            
 
 def p_params(p):
     '''Parameters : LPAREN ParameterListOpt RPAREN'''
@@ -287,26 +301,28 @@ def p_param_list_opt(p):
     p[0] = p[1]
 
 def p_param_list(p):
-    '''ParametersList : Type
-                      | IdentifierList Type
+    '''ParametersList : ParameterDecl
                       | ParameterDeclCommaRep'''
-    if len(p) == 3:
-        p[0] = ["ParametersList", p[1], p[2]]
-    else:
-        p[0] = p[1]
+    p[0] = p[1]
 
 def p_param_decl_comma_rep(p):
     '''ParameterDeclCommaRep : ParameterDeclCommaRep COMMA ParameterDecl
                              | ParameterDecl COMMA ParameterDecl'''
-    p[0] = ["ParameterDeclCommaRep", p[1], ",", p[3]]
+    p[0] = p[1]
+    p[0].idList += p[3].idList
+    p[0].typeList += p[3].typeList
+    p[0].placelist += p[3].placelist
 
 def p_param_decl(p):
     '''ParameterDecl : IdentifierList Type
                      | Type'''
     if len(p) == 3:
-        p[0] = ["ParameterDecl", p[1], p[2]]
+        p[0] = p[1]
+        for x in p[1].idList:
+            scopeDict[currScope].updateArgList(x, 'type', p[2].typeList[0])
+            p[0].typeList.append(p[2].typeList[0])      
     else:
-        p[0] = ["ParameterDecl", p[1]]
+        p[0] = p[1]
 # ---------------------------------------------------------
 
 
@@ -420,6 +436,10 @@ def p_expr_list(p):
     p[0].code = p[1].code+p[0].code
     p[0].placelist = p[1].placelist + p[0].placelist
     p[0].typeList = p[1].typeList + p[0].typeList
+    if 'AddrList' not in p[1].extra:
+        p[1].extra['AddrList'] = ['None']
+    p[0].extra['AddrList'] += p[1].extra['AddrList']
+
 
 def p_expr_rep(p):
     '''ExpressionRep : ExpressionRep COMMA Expression
@@ -429,9 +449,13 @@ def p_expr_rep(p):
     	p[0].code += p[3].code
     	p[0].placelist += p[3].placelist
     	p[0].typeList += p[3].typeList
+        if 'AddrList' not in p[3].extra: 
+            p[3].extra['AddrList'] = ['None']
+        p[0].extra['AddrList'] += p[3].extra['AddrList']
 
     else:
     	p[0] = p[1]
+        p[0].extra['AddrList'] = []
 # ------------------------------------------------------
 
 
@@ -599,22 +623,22 @@ def p_func_name(p):
 
 def p_func(p):
     '''Function : Signature FunctionBody'''
+    # TODO typechecking of return type. It should be same as defined in signature
     p[0] = p[2]
-    if checkId(p[-2][1], "global"):
-        raise NameError("Name " + p[-2][1] + " already exists, can't redefine")
-    else:
-        scopeDict[0].insert(p[-2][1], "func")
+    for x in range(len(p[1].idList)):
+        info = findInfo(p[1].idList[x])
+        p[0].code = [['pop', len(p[1].idList) - x - 1, info['place']]] + p[0].code
+
+    if checkId(p[-2][1], "signatureType"):
         if p[-2][1] == "main":
             scopeDict[0].updateArgList("main", "label", "label0")
             scopeDict[0].updateArgList("main", 'child', scopeDict[currScope])
-        else:
-            label = newLabel()
-            scopeDict[0].updateArgList(p[-2][1], "label", label)
-            scopeDict[0].updateArgList(p[-2][1], 'child', scopeDict[currScope])
-        if len(p[1].typeList):
-            scopeDict[0].updateArgList(p[-2][1], 'retType', p[1].typeList[0])
-        else:
-            scopeDict[0].updateArgList(p[-2][1], 'retType', 'void')
+
+        info = findInfo(p[-2][1])
+        info['type'] = 'func' 
+    else:
+        raise NameError('no signature for ' + p[-2][1] + '!')
+
 
 def p_func_body(p):
     '''FunctionBody : Block'''
@@ -676,13 +700,13 @@ def p_operand_name(p):
     p[0] = Node()
     info = findInfo(p[1])
     #print info
-    #TODO insert return type in function
-    if info['type'] == 'func':
+    if info['type'] == 'func' or info['type'] == 'signatureType':
         p[0].typeList = [info['retType']]
         p[0].placelist.append(info['label'])
     else:
         p[0].typeList = [info['type']]
         p[0].placelist.append(info['place'])
+    p[0].idList = [p[1]]
 # ---------------------------------------------------------
 
 
@@ -711,11 +735,21 @@ def p_prim_expr(p):
     elif p[2] == '[':
         p[0] = p[1]
         p[0].code += p[3].code
+        
+        newPlace4 = newTemp()
+        p[0].code.append(['=', newPlace4, '4'])
+
+        newPlace3 = newTemp()
+        p[0].code.append(['x', newPlace3, p[3].placelist[0], newPlace4])
+
         newPlace = newTemp()
-        #TODO multiply with size first
-        p[0].code.append(['+', newPlace, p[0].placelist[0], p[3].placelist[0]])
+        p[0].code.append(['+', newPlace, p[0].placelist[0], newPlace3])
+        
         newPlace2 = newTemp()
         p[0].code.append(['*', newPlace2, newPlace])
+        
+
+        p[0].extra['AddrList'] = [newPlace]
         p[0].placelist = [newPlace2]
         p[0].typeList = [p[1].typeList[0][1:]]
 
@@ -724,11 +758,16 @@ def p_prim_expr(p):
         p[0].code += p[3].code
         if len(p[3].placelist):
             for x in p[3].placelist:
-                p[0].code.append(['param', x])
-        #TODO check type and call accordingly
-        print p[0].code
-        p[0].code.append(['callvoid', p[1].placelist[0]])
-        #TODO
+                p[0].code.append(['push', x])
+
+        info = findInfo(p[1].idList[0], 0)
+        if info['retType'] == 'void':
+            p[0].code.append(['callvoid', info['label']])
+        else:
+            newPlace = newTemp()
+            p[0].placelist = [newPlace]
+            p[0].code.append(['callint', newPlace, info['label']])
+        #TODO type checking
         p[0].typeList = [p[1].typeList[0]]
     else:
         p[0] = Node()
@@ -929,6 +968,8 @@ def p_assignment(p):
   p[0].code += p[3].code
   for x in range(len(p[1].placelist)):
       p[0].code.append([p[2][1][1], p[1].placelist[x], p[3].placelist[x]])
+      if p[1].extra['AddrList'][x] != 'None':
+        p[0].code.append(['load', p[1].extra['AddrList'][x], p[1].placelist[x]])
   #TODO type checking
 
 def p_assign_op(p):
