@@ -9,19 +9,12 @@ import (
 const t int_t = 3;
 var i int_t = 5;
 var (
-    l = t*i + i + i[1] ;
+    l = t*i ;
 );
-
-func hutiya(a int_t, b int_t) {
-    var i int_t = 4+3;
-    return a;
-};
 
 func main() {
     i += 3;
-	hutiya(3,1);
 	lsls :
-/*	goto dsds;
     if i>3 {
         i+=7;
     }
@@ -34,6 +27,9 @@ func main() {
 			break lsls;
 		};
 	};
-	dsds : */
-    return 0;    
+	dsds :
+	print i;
+	print t;
+	print l;
+	return;    
 };

@@ -673,7 +673,7 @@ def p_basic_lit(p):
     name = newTemp()
     p[0].code.append(["=", name, p[2]])
     p[0].placelist.append(name)
-    p[0].typeList.append('lit' + p[1] )
+    p[0].typeList.append('lit' + p[1])
 
 def p_I(p):
     ''' I : '''
@@ -770,12 +770,35 @@ def p_prim_expr(p):
         #TODO type checking
         p[0].typeList = [p[1].typeList[0]]
     else:
-        p[0] = Node()
+        if not len(p[2].placelist):
+            p[0] = Node()
+        else:
+            p[0] = p[1]
+            p[0].placelist = p[2].placelist
+            p[0].typeList = p[2].typeList
 
 def p_selector(p):
     '''Selector : DOT IDENTIFIER'''
-    p[0] = ["Selector", ".", p[2]]
-    #TODO struct
+    p[0] = Node()
+    info = findInfo(p[-1].idList[0])
+    structName = info['type'][4:]
+    infoStruct = findInfo(structName, 0)
+    newScopeTable = infoStruct['child']
+    if p[2] not in newScopeTable.table:
+        raise NameError("Identifier " + p[2] + " is not defined in struct " + structName)
+    
+    s = p[-1].idList[0] + "." + p[2]
+    if checkId(s,'*'):
+        info = findInfo(s)
+        p[0].placelist = [info['place']]
+        p[0].typeList = [info['type']]
+    else:
+        p[0].placelist = [newTemp()]
+        typedata = newScopeTable.getInfo(p[2])
+        p[0].typeList = [typedata['type']]
+        scopeDict[currScope].insert(s,p[0].typeList[0])
+        scopeDict[currScope].updateArgList(s,'place',p[0].placelist[0])
+
 
 def p_slice(p):
     '''Slice : LSQUARE ExpressionOpt COLON ExpressionOpt RSQUARE
@@ -904,11 +927,25 @@ def p_statement(p):
                  | CreateScope Block EndScope
                  | IfStmt
                  | SwitchStmt
-                 | ForStmt '''
+                 | ForStmt
+                 | PrintStmt
+                 | ScanStmt'''
+
     if len(p) == 2:
         p[0] = p[1]
     else:
         p[0] = p[2]
+
+
+def p_print_stmt(p):
+    ''' PrintStmt : PRINT Expression'''
+    p[0] = p[2]
+    p[0].code.append(['print', p[2].placelist[0]])
+
+def p_scan_stmt(p):
+    ''' ScanStmt : SCAN Expression'''
+    p[0] = Node()
+    p[0].code.append(['scan', p[2].placelist[0]])
 
 
 
@@ -997,7 +1034,10 @@ def p_if_statement(p):
   p[0].code = p[2].code
   label1 = newLabel()
   newVar = newTemp()
-  p[0].code += [['!', newVar, p[2].placelist[0]]]
+  p[0].code += [['=', newVar, p[2].placelist[0]]]
+  newVar2 = newTemp()
+  p[0].code += [['=',newVar2,'1']]
+  p[0].code += [['-',newVar,newVar2, newVar]]
   p[0].code += [['ifgoto',newVar, label1]]
   p[0].code += p[4].code
   label2 = newLabel()
@@ -1160,9 +1200,9 @@ def p_forclause(p):
 
   p[0].extra['after'] = label2
   if len(p[3].placelist) != 0:
-  	newVar = newTemp()
-  	p[0].code += [['!', newVar, p[3].placelist[0]],['ifgoto', newVar, label2]]
-
+    newVar = newTemp()
+    newVar2 = newTemp()
+    p[0].code += [['=', newVar, p[3].placelist[0]],['=',newVar2,'1'],['-',newVar,newVar2,newVar],['ifgoto', newVar, label2]]
   p[0].code += p[5].code
 
 
@@ -1270,7 +1310,7 @@ def p_package_clause(p):
     '''PackageClause : PACKAGE PackageName'''
     # p[0] = ["PackageClause", "package", p[2]]
     p[0] = p[2]
-    p[0].code = [["package",str(p[2].idList[0])]]
+    # p[0].code = [["package",str(p[2].idList[0])]]
 
 def p_package_name(p):
     '''PackageName : IDENTIFIER'''
@@ -1292,13 +1332,13 @@ def p_import_decl(p):
   if len(p) == 3:
     # p[0] = ["ImportDecl", "import", p[2]]
     p[0] = p[2]
-    p[0].code = [["import"] + p[2].idList]
+    # p[0].code = [["import"] + p[2].idList]
 
   else:
     # p[0] = ["ImportDecl", "import", "(", p[3], ")"]
     p[0] = Node()
-    for i in p[3].idList:
-      p[0].code.append(["import", i])
+    # for i in p[3].idList:
+    #   p[0].code.append(["import", i])
 
 def p_import_spec_rep(p):
   ''' ImportSpecRep : ImportSpecRep ImportSpec SEMICOLON
@@ -1550,12 +1590,7 @@ result = parser.parse(s)
 # print nonTerminals
 # print rootNode.code
 checkLabel()
-printList(rootNode)
-file_name = file_name.split("/")[-1].split(".")[0] + ".html"
+file_name = file_name.split("/")[-1].split(".")[0] + ".ir"
 sys.stdout = open(file_name, "w+")
-print "<!DOCTYPE html>\
-<html><head>"
-print "<b style='color:red'>Start</b><br>"
+printList(rootNode)
 
-#printResult(result, "" , "")
-print "</head></html>"

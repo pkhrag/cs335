@@ -1,23 +1,16 @@
-package main;
+package maie;
 
-import (
-	"fmt";
-	"math/cmplx";
-);
+import "fmt";
+func test(a, b int_t) float_t;
 
-var (
-	ToBe   bool_t      = false;
-	MaxInt int_t     = 1<<64 - 1;
-	z      complex_t = cmplx.Sqrt(-5 + 12i);
-);
-
-func fa(a int_t,b int_t){
-	;
-};
 
 func main() {
-	fa(ToBe, ToBe);
-	fa(MaxInt, MaxInt);
-	fa(z, z);
-	fmt.Println("Hello");
+	var i int_t =3;
+	var j int_t = test(1,2);
+	i  += j;
 };
+
+func test(a, b int_t) {
+	return;
+};
+

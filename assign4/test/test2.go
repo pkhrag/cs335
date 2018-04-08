@@ -1,18 +1,15 @@
-package main;
+package math;
+import "fmt";
 
-import (
-	"fmt";
-	"time";
-);
-
-func f(a int_t, b int_t)
-{
-	fmt.Println("Hello");
+type Vertex struct{
+	i int_t;
 };
 
 func main() {
-	fmt.Println("Welcome to the playground!");
-	var b int_t = 4;
-	var a int_t=5;
-	f(b, a);
+
+	var d[5] int_t;
+	var e int_t = 2;
+    d[0] = 3;
+	d[1] = 4;
+	e = d[1] + d[0];
 };

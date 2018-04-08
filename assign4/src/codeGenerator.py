@@ -8,7 +8,7 @@ def codeGen(x, nextUseTable):
 	end = x[1]
  	# print "heya"
 	flag = 0
-	if ir[end].type == 'retint' or ir[end].type == 'retvoid' or ir[end].type == 'goto' or ir[end].type == 'callint' or ir[end].type == 'callvoid'  :
+	if ir[end].type == 'ifgoto' or ir[end].type == 'print' or ir[end].type == 'scan' or ir[end].type == 'retint' or ir[end].type == 'retvoid' or ir[end].type == 'goto' or ir[end].type == 'callint' or ir[end].type == 'callvoid':
 		flag = 1
 
 	for lineNo in range(start,end+1-flag):
@@ -23,6 +23,8 @@ def codeGen(x, nextUseTable):
 						# regDes[reg] = None
 						#  addrDes[symbol]['register'] = None
 			addrDes[symbol]['memory'] = True
+			addrDes[symbol]['register'] = None
+			regDes[reg] = None
 
 	if flag:
 		genAsm.genInstr("# " + ir[end].instr)
@@ -335,7 +337,7 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 
 			## else increment a in register
 			else:
-				genAsm.genInstr(instrType + " %" + ir[lineNo].dst)
+				genAsm.genInstr(instrType + " %" + isRegDst)
 				addrDes[ir[lineNo].dst]['memory'] = False
 
 		elif ir[lineNo].type == 'label':
