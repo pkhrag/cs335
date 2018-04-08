@@ -19,6 +19,11 @@ labelDict = {}
 
 
 def checkId(identifier, typeOf):
+    if typeOf == "global":
+        if scopeDict[0].getInfo(identifier) is not None:
+            return True
+        return False
+
     if typeOf == "*":
         if scopeDict[currScope].getInfo(identifier) is not None:
             return True
@@ -268,16 +273,18 @@ def p_base_type(p):
 #TODO
 def p_sign(p):
     '''Signature : Parameters TypeOpt'''
-    p[0] = ["Signature", p[1], p[2]]
+    p[0] = p[2]
+    # print p[-2][1]
+    
 
 def p_params(p):
     '''Parameters : LPAREN ParameterListOpt RPAREN'''
-    p[0] = ["Parameters", "(", p[2], ")"]
+    p[0] = p[2]
 
 def p_param_list_opt(p):
     '''ParameterListOpt : ParametersList
                              | epsilon'''
-    p[0] = ["ParameterListOpt", p[1]]
+    p[0] = p[1]
 
 def p_param_list(p):
     '''ParametersList : Type
@@ -286,7 +293,7 @@ def p_param_list(p):
     if len(p) == 3:
         p[0] = ["ParametersList", p[1], p[2]]
     else:
-        p[0] = ["ParametersList", p[1]]
+        p[0] = p[1]
 
 def p_param_decl_comma_rep(p):
     '''ParameterDeclCommaRep : ParameterDeclCommaRep COMMA ParameterDecl
@@ -364,7 +371,7 @@ def p_const_spec(p):
         raise ValueError("Error: mismatch in number of identifiers and expressions for asisgnment")
 
     for x in range(len(p[1].placelist)):
-        if p[4].typeList[x] != 'lit':
+        if (p[4].typeList[x]).startswith('lit'):
             p[0].code.append(["=", p[1].placelist[x], p[4].placelist[x]])
         p[1].placelist[x] = p[4].placelist[x]
         scope = findScope(p[1].idList[x])
@@ -392,14 +399,15 @@ def p_identifier_rep(p):
     '''IdentifierRep : IdentifierRep COMMA IDENTIFIER
                      | epsilon'''
     if len(p) == 4:
-        p[0] = ["IdentifierRep", p[1], ",", p[3]]
         if checkId(p[3], "*"):
             raise NameError("Name " + p[3] + " already exists, can't redefine")
         else:
+            p[0] = p[1]
             scopeDict[currScope].insert(p[3], None)
             nameTemp = newTemp()
             p[0].placelist = p[0].placelist + [nameTemp]
             scopeDict[currScope].updateArgList(p[3], 'place', nameTemp)
+            p[0].idList.append(p[3])
 
 
     else:
@@ -493,13 +501,15 @@ def p_var_spec(p):
             raise ValueError("Error: mismatch in number of identifiers and expressions for asisgnment")
 
         for x in range(len(p[1].placelist)):
-            if p[3].typeList[x] != 'lit':
-                p[0].code.append(["=", p[1].placelist[x], p[3].placelist[x]])
-            p[1].placelist[x] = p[3].placelist[x]
-
             scope = findScope(p[1].idList[x])
+            if (p[3].typeList[x]).startswith('lit'):
+                p[0].code.append(["=", p[1].placelist[x], p[3].placelist[x]])
+                scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[3].typeList[x][3:])
+            else:
+                scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[3].typeList[x])
+
+            p[1].placelist[x] = p[3].placelist[x]
             scopeDict[scope].updateArgList(p[1].idList[x], 'place', p[1].placelist[x])
-            scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[3].typeList[x])
     else:
         if len(p[3].placelist) == 0:
             p[0] = p[1]
@@ -514,7 +524,7 @@ def p_var_spec(p):
             raise ValueError("Error: mismatch in number of identifiers and expressions for asisgnment")
 
         for x in range(len(p[1].placelist)):
-            if p[3].typeList[x] != 'lit':
+            if not (p[3].typeList[x]).startswith('lit'):
                 p[0].code.append(["=", p[1].placelist[x], p[3].placelist[x]])
             p[1].placelist[x] = p[3].placelist[x]
 
@@ -552,11 +562,10 @@ def p_short_var_decl(p):
 
 
 # ----------------FUNCTION DECLARATIONS------------------
-#TODO type also
 def p_func_decl(p):
-    '''FunctionDecl : FUNC FunctionName CreateFuncScope Function EndScope
-                    | FUNC FunctionName CreateFuncScope Signature EndScope'''
-    if type(p[4]) is list:
+    '''FunctionDecl : FUNC FunctionName CreateScope Function EndScope
+                    | FUNC FunctionName CreateScope Signature EndScope'''
+    if not len(p[4].code):
         p[0] = Node()
         return
 
@@ -586,27 +595,33 @@ def p_delete_scope(p):
 def p_func_name(p):
     '''FunctionName : IDENTIFIER'''
     p[0] = ["FunctionName", p[1]]
-    if checkId(p[1], "*"):
-        raise NameError("Name " + p[1] + " already exists, can't redefine")
-    else:
-        scopeDict[currScope].insert(p[1], "func")
-        if p[1] == "main":
-            scopeDict[currScope].updateArgList("main", "label", "label0")
-        else:
-            label = newLabel()
-            scopeDict[currScope].updateArgList(p[1], "label", label)
+    
 
 def p_func(p):
     '''Function : Signature FunctionBody'''
     p[0] = p[2]
-    # print p[-2]
+    if checkId(p[-2][1], "global"):
+        raise NameError("Name " + p[-2][1] + " already exists, can't redefine")
+    else:
+        scopeDict[0].insert(p[-2][1], "func")
+        if p[-2][1] == "main":
+            scopeDict[0].updateArgList("main", "label", "label0")
+            scopeDict[0].updateArgList("main", 'child', scopeDict[currScope])
+        else:
+            label = newLabel()
+            scopeDict[0].updateArgList(p[-2][1], "label", label)
+            scopeDict[0].updateArgList(p[-2][1], 'child', scopeDict[currScope])
+        if len(p[1].typeList):
+            scopeDict[0].updateArgList(p[-2][1], 'retType', p[1].typeList[0])
+        else:
+            scopeDict[0].updateArgList(p[-2][1], 'retType', 'void')
 
 def p_func_body(p):
     '''FunctionBody : Block'''
     p[0] = p[1]
 # -------------------------------------------------------
 
-#TODO type insertion here onwards
+
 # ----------------------OPERAND----------------------------
 def p_operand(p):
     '''Operand : Literal
@@ -623,18 +638,35 @@ def p_literal(p):
     p[0] = p[1]
 
 def p_basic_lit(p):
-    '''BasicLit : INTEGER
-                | OCTAL
-                | HEX
-                | FLOAT
-                | IMAGINARY
-                | RUNE
-                | STRING'''
+    '''BasicLit : I INTEGER
+                | I OCTAL
+                | I HEX
+                | F FLOAT
+                | C IMAGINARY
+                | I RUNE
+                | S STRING'''
     p[0] = Node()
     name = newTemp()
-    p[0].code.append(["=", name, p[1]])
+    p[0].code.append(["=", name, p[2]])
     p[0].placelist.append(name)
-    p[0].typeList.append('lit')
+    p[0].typeList.append('lit' + p[1] )
+
+def p_I(p):
+    ''' I : '''
+    p[0] = 'int_t'
+
+
+def p_F(p):
+    ''' F : '''
+    p[0] = 'float_t'
+
+def p_C(p):
+    ''' C : '''
+    p[0] = 'complex_t'
+
+def p_S(p):
+    ''' S : '''
+    p[0] = 'string_t'
 
 
 def p_operand_name(p):
@@ -644,11 +676,13 @@ def p_operand_name(p):
     p[0] = Node()
     info = findInfo(p[1])
     #print info
+    #TODO insert return type in function
     if info['type'] == 'func':
+        p[0].typeList = [info['retType']]
         p[0].placelist.append(info['label'])
     else:
+        p[0].typeList = [info['type']]
         p[0].placelist.append(info['place'])
-    p[0].typeList = [info['type']]
 # ---------------------------------------------------------
 
 
@@ -683,8 +717,8 @@ def p_prim_expr(p):
         newPlace2 = newTemp()
         p[0].code.append(['*', newPlace2, newPlace])
         p[0].placelist = [newPlace2]
+        p[0].typeList = [p[1].typeList[0][1:]]
 
-        #TODO type of p[0] needs to be updated
     elif p[2] == '(':
         p[0] = p[1]
         p[0].code += p[3].code
@@ -695,8 +729,9 @@ def p_prim_expr(p):
         print p[0].code
         p[0].code.append(['callvoid', p[1].placelist[0]])
         #TODO
+        p[0].typeList = [p[1].typeList[0]]
     else:
-        p[0] = ["PrimaryExpr", p[1], p[2]]
+        p[0] = Node()
 
 def p_selector(p):
     '''Selector : DOT IDENTIFIER'''
@@ -719,22 +754,6 @@ def p_expr_list_type_opt(p):
     '''ExpressionListTypeOpt : ExpressionList
                              | epsilon'''
     p[0] = p[1]
-
-#def p_comma_opt(p):
-#    '''CommaOpt : COMMA
-#                | epsilon'''
-#    if p[1] == ",":
-#        p[0] = ["CommaOpt", ","]
-#    else:
-#        p[0] = ["CommaOpt", p[1]]
-
-def p_expr_list_comma_opt(p):
-    '''ExpressionListCommaOpt : COMMA ExpressionList
-                              | epsilon'''
-    if len(p) == 3:
-        p[0] = ["ExpressionListCommaOpt", ",", p[2]]
-    else:
-        p[0] = ["ExpressionListCommaOpt", p[1]]
 # ---------------------------------------------------------
 
 
@@ -769,7 +788,7 @@ def p_expr(p):
             p[0].code.append([p[2],newPlace,p[1].placelist[0], p[3].placelist[0] ])
         p[0].placelist = [newPlace]
 
-        #TODO typechecking based on typeList
+        #TODO typechecking based on typeList and update type of p[0]
 
     else:
         p[0] = p[1]
@@ -825,8 +844,8 @@ def p_unary_op(p):
 # -----------------CONVERSIONS-----------------------------
 def p_conversion(p):
     '''Conversion : TYPECAST Type LPAREN Expression RPAREN'''
-    p[0] = ["Conversion", p[1], p[2],  "(", p[4], ")"]
-    #TODO type conversion
+    p[0] = p[4]
+    p[0].typeList = [p[1].typeList[0]]
 # ---------------------------------------------------------
 
 
@@ -910,6 +929,7 @@ def p_assignment(p):
   p[0].code += p[3].code
   for x in range(len(p[1].placelist)):
       p[0].code.append([p[2][1][1], p[1].placelist[x], p[3].placelist[x]])
+  #TODO type checking
 
 def p_assign_op(p):
   ''' assign_op : AssignOp'''
@@ -945,12 +965,6 @@ def p_if_statement(p):
   p[0].code += p[6].code
   p[0].code += [['label', label2]]
 
-
-
-def p_SimpleStmtOpt(p):
-  ''' SimpleStmtOpt : SimpleStmt SEMICOLON
-                    | epsilon '''
-  p[0] = p[1]
 
 def p_else_opt(p):
   ''' ElseOpt : ELSE IfStmt
