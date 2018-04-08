@@ -7,7 +7,6 @@ Instructions to run the code generator
 * Type `make clean` after successfully testing the parser.
 
 ## NOTE
---------------------------------------
 
 * Type checking is to be done in the final submission.
 * After every statement, semicolon need to be inserted.
