@@ -768,7 +768,6 @@ def p_prim_expr(p):
         newPlace = newTemp()
         p[0].code.append(['+', newPlace, p[0].placelist[0], newVar])
         p[0].placelist = [newPlace]
-        print len(sizeList), p[1].extra['layerNum']
         if p[1].extra['layerNum'] == len(sizeList) - 2:
             newPlace2 = newTemp()
             p[0].code.append(['load', newPlace2, newPlace])
@@ -824,7 +823,6 @@ def p_selector(p):
         p[0].typeList = [info['type']]
     else:
         p[0].placelist = [newTemp()]
-        print p[0].placelist
         typedata = newScopeTable.getInfo(p[2])
         p[0].typeList = [typedata['type']]
         scopeDict[currScope].insert(s,p[0].typeList[0])

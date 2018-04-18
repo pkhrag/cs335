@@ -61,16 +61,16 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 			'&=': "and",
 			'|=': "or",
 			'^=': "xor",
-			'*': "movl",
 			'++': "incl",
 			'--': "decl",
 			'label' : "label",
-			'print': "call printf",#todo
-			'scan' : "call scanf",#todo
+			'print': "call printf",
+			'scan' : "call scanf",
 			'ifgoto': "jne",
 			'callint': "call",
                         'load': 'movl',
                         'store': 'movl',
+                        'array': 'sub',
 			'callvoid': "call",
 			'goto': "jmp",
 			'retint': "ret",
@@ -278,11 +278,24 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 				## if source variable is in memory
 				if isRegSrc is None:
 
-					if ir[lineNo].type == '*':
+					if ir[lineNo].type == 'load':
 						genAsm.genInstr("movl ("+ir[lineNo].src1+"), %"+locationDst)
 						genAsm.genInstr(instrType + " (%" + locationDst + "), %"+locationDst)
 						addrDes[ir[lineNo].dst]['register'] = locationDst
 						addrDes[ir[lineNo].dst]['memory'] = False
+
+                                        # lol
+                                        elif ir[lineNo].type == 'store':
+                                                genAsm.genInstr("pushl (" + ir[lineNo].src1 + ")")
+                                                genAsm.genInstr("popl (%" + locationDst + ")")
+
+
+                                        elif ir[lineNo].type == 'array':
+                                                genAsm.genInstr('subl $4, %esp')
+                                                genAsm.genInstr('subl (' + ir[lineNo].src1 + '), %esp')
+                                                genAsm.genInstr('movl %esp, %' + locationDst)
+                                                addrDes[ir[lineNo].dst]['register'] = locationDst
+                                                addrDes[ir[lineNo].dst]['memory'] = False
 
 					else:
 						genAsm.genInstr(instrType + " (" + ir[lineNo].src1 + "), %" + locationDst)
@@ -293,10 +306,20 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 				## if source variable is in register already
 				else :
 
-					if ir[lineNo].type == '*':
+					if ir[lineNo].type == 'load':
 						genAsm.genInstr(instrType+ " (%" + isRegSrc + "), %" + locationDst)
 						addrDes[ir[lineNo].dst]['register'] = locationDst
 						addrDes[ir[lineNo].dst]['memory'] = False
+
+                                        elif ir[lineNo].type == 'store':
+                                                genAsm.genInstr("movl %" + isRegSrc + ", (%" + locationDst + ")")
+
+                                        elif ir[lineNo].type == 'array':
+                                                genAsm.genInstr('subl $4, %esp')
+                                                genAsm.genInstr('subl %' + isRegSrc + ', %esp')
+                                                genAsm.genInstr('movl %esp, %' + locationDst)
+                                                addrDes[ir[lineNo].dst]['register'] = locationDst
+                                                addrDes[ir[lineNo].dst]['memory'] = False
 
 					elif locationDst != isRegSrc:
 						genAsm.genInstr(instrType + " %" + isRegSrc + ", %" + locationDst)

@@ -8,7 +8,7 @@ type_4 = ['+', '-', 'x', '/', '%', '&', '|', '^', '<<', '>>', '==', '<', '>', '!
 # Corresponds to 3 operand instructions
 type_3 = ['=', '+=', '-=', 'x=', '&=',
           '|=', '^=', '<<=', '>>=',
-           'ifgoto', 'callint', 'load', 'store']
+           'ifgoto', 'callint', 'load', 'store', 'array']
 
 # Corresponds to 2 operand instructions
 type_2 = ['++', '!', '--', 'label', 'print', 'scan', 'callvoid', 'goto', 'retint', 'push', 'pop']
