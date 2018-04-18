@@ -223,7 +223,9 @@ def p_array_type(p):
   p[0] = Node()
   p[0].code = p[2].code + p[4].code
   p[0].typeList.append("*" + p[4].typeList[0])
-  p[0].extra['sizeList'] = p[2].placelist + p[4].extra['sizeList']
+  newVar = newTemp()
+  p[0].code.append(['=', newVar, p[2].placelist[0]])
+  p[0].extra['sizeList'] = [newVar] + p[4].extra['sizeList']
 
 def p_array_length(p):
   ''' ArrayLength : Expression '''
@@ -552,6 +554,7 @@ def p_var_spec(p):
                 scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[2].typeList[0])
                 if p[2].typeList[0][0] == '*':
                     p[0].code.append(['array', p[1].placelist[x], newVar])
+                    scopeDict[scope].updateArgList(p[1].idList[x], 'sizeList', p[2].extra['sizeList'])
             return
 
         p[0] = Node()
@@ -718,6 +721,8 @@ def p_operand_name(p):
     else:
         p[0].typeList = [info['type']]
         p[0].placelist.append(info['place'])
+        p[0].extra['layerNum'] = 0
+        p[0].extra['operand'] = p[1]
     p[0].idList = [p[1]]
 # ---------------------------------------------------------
 
@@ -749,22 +754,30 @@ def p_prim_expr(p):
         p[0] = p[1]
         p[0].code += p[3].code
 
-        newPlace4 = newTemp()
-        p[0].code.append(['=', newPlace4, '4'])
+        info = findInfo(p[1].extra['operand'])
+        sizeList = info['sizeList']
 
-        newPlace3 = newTemp()
-        p[0].code.append(['x', newPlace3, p[3].placelist[0], newPlace4])
+        if p[1].extra['layerNum'] == len(sizeList) - 1:
+            raise IndexError('Dimension of the array ' + p[1].extra['operand'] + " doesn't match")
+
+        newVar = newTemp()
+        p[0].code.append(['=', newVar, p[3].placelist[0]])
+        for item in sizeList[p[1].extra['layerNum']+1:]:
+            p[0].code.append(['x=', newVar, item])
 
         newPlace = newTemp()
-        p[0].code.append(['+', newPlace, p[0].placelist[0], newPlace3])
-
-        newPlace2 = newTemp()
-        p[0].code.append(['load', newPlace2, newPlace])
+        p[0].code.append(['+', newPlace, p[0].placelist[0], newVar])
+        p[0].placelist = [newPlace]
+        print len(sizeList), p[1].extra['layerNum']
+        if p[1].extra['layerNum'] == len(sizeList) - 2:
+            newPlace2 = newTemp()
+            p[0].code.append(['load', newPlace2, newPlace])
+            p[0].placelist = [newPlace2]
 
 
         p[0].extra['AddrList'] = [newPlace]
-        p[0].placelist = [newPlace2]
         p[0].typeList = [p[1].typeList[0][1:]]
+        p[0].extra['layerNum'] += 1
 
     elif p[2] == '(':
         p[0] = p[1]
