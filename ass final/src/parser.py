@@ -190,6 +190,8 @@ def p_type_token(p):
     if len(p) == 2:
         p[0] = Node()
         p[0].typeList.append(p[1])
+        p[0].extra['sizeList'] = [4]
+        #TODO identify rune
     else:
         if not checkId(p[2], '**'):
             raise TypeError("Typename " + p[2] + " not defined")
@@ -197,6 +199,7 @@ def p_type_token(p):
         info = findInfo(p[2], 0)
         # print info['type']
         p[0].typeList.append(info['type'])
+        # TODO struct size
 
 def p_type_lit(p):
     '''TypeLit : ArrayType
@@ -218,8 +221,9 @@ def p_type_opt(p):
 def p_array_type(p):
   '''ArrayType : LSQUARE ArrayLength RSQUARE ElementType'''
   p[0] = Node()
-  p[0].code = p[2].code
+  p[0].code = p[2].code + p[4].code
   p[0].typeList.append("*" + p[4].typeList[0])
+  p[0].extra['sizeList'] = p[2].placelist + p[4].extra['sizeList']
 
 def p_array_length(p):
   ''' ArrayLength : Expression '''
@@ -537,9 +541,17 @@ def p_var_spec(p):
     else:
         if len(p[3].placelist) == 0:
             p[0] = p[1]
+            p[0].code += p[2].code
+            if p[2].typeList[0][0] == '*':
+                newVar = newTemp()
+                p[0].code.append(['=', newVar, 1])
+                for item in p[2].extra['sizeList']:
+                    p[0].code.append(['x=', newVar, item])
             for x in range(len(p[1].idList)):
                 scope = findScope(p[1].idList[x])
                 scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[2].typeList[0])
+                if p[2].typeList[0][0] == '*':
+                    p[0].code.append(['array', p[1].placelist[x], newVar])
             return
 
         p[0] = Node()
@@ -733,6 +745,7 @@ def p_prim_expr(p):
     if len(p) == 2:
         p[0] = p[1]
     elif p[2] == '[':
+        #TODO multidimension
         p[0] = p[1]
         p[0].code += p[3].code
 
@@ -781,7 +794,11 @@ def p_selector(p):
     '''Selector : DOT IDENTIFIER'''
     p[0] = Node()
     info = findInfo(p[-1].idList[0])
-    structName = info['type'][4:]
+    structName = info['type']
+    for x in range(len(structName)):
+        if structName[x] != '*':
+            break
+    structName = structName[x+4:]
     infoStruct = findInfo(structName, 0)
     newScopeTable = infoStruct['child']
     if p[2] not in newScopeTable.table:
@@ -794,6 +811,7 @@ def p_selector(p):
         p[0].typeList = [info['type']]
     else:
         p[0].placelist = [newTemp()]
+        print p[0].placelist
         typedata = newScopeTable.getInfo(p[2])
         p[0].typeList = [typedata['type']]
         scopeDict[currScope].insert(s,p[0].typeList[0])
