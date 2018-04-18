@@ -7,7 +7,9 @@ type Vertex struct{
 };
 
 func main() {
-
+	
+	var a[33] int_t;
+	a[3] = 3;
 	var d,e type Vertex;
 	var i int_t = 2;
 	d.i = 3;

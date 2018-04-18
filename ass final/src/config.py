@@ -7,12 +7,11 @@ type_4 = ['+', '-', 'x', '/', '%', '&', '|', '^', '<<', '>>', '==', '<', '>', '!
 
 # Corresponds to 3 operand instructions
 type_3 = ['=', '+=', '-=', 'x=', '&=',
-          '|=', '^=', '<<=', '>>=', 
-          # '*',
-           'ifgoto', 'callint']
+          '|=', '^=', '<<=', '>>=',
+           'ifgoto', 'callint', 'load', 'store']
 
 # Corresponds to 2 operand instructions
-type_2 = ['++', '!', '--', 'label', 'print', 'scan', 'callvoid', 'goto', 'retint']
+type_2 = ['++', '!', '--', 'label', 'print', 'scan', 'callvoid', 'goto', 'retint', 'push', 'pop']
 
 type_1 = ['retvoid']
 

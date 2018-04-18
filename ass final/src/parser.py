@@ -286,10 +286,10 @@ def p_sign(p):
     info = findInfo(p[-2][1],0)
     if 'label' not in info:
         labeln = newLabel()
-        scopeDict[0].updateArgList(p[-2][1], 'label', labeln) 
+        scopeDict[0].updateArgList(p[-2][1], 'label', labeln)
         scopeDict[0].updateArgList(p[-2][1], 'child', scopeDict[currScope])
 
-            
+
 
 def p_params(p):
     '''Parameters : LPAREN ParameterListOpt RPAREN'''
@@ -320,7 +320,7 @@ def p_param_decl(p):
         p[0] = p[1]
         for x in p[1].idList:
             scopeDict[currScope].updateArgList(x, 'type', p[2].typeList[0])
-            p[0].typeList.append(p[2].typeList[0])      
+            p[0].typeList.append(p[2].typeList[0])
     else:
         p[0] = p[1]
 # ---------------------------------------------------------
@@ -449,7 +449,7 @@ def p_expr_rep(p):
     	p[0].code += p[3].code
     	p[0].placelist += p[3].placelist
     	p[0].typeList += p[3].typeList
-        if 'AddrList' not in p[3].extra: 
+        if 'AddrList' not in p[3].extra:
             p[3].extra['AddrList'] = ['None']
         p[0].extra['AddrList'] += p[3].extra['AddrList']
 
@@ -619,7 +619,7 @@ def p_delete_scope(p):
 def p_func_name(p):
     '''FunctionName : IDENTIFIER'''
     p[0] = ["FunctionName", p[1]]
-    
+
 
 def p_func(p):
     '''Function : Signature FunctionBody'''
@@ -635,7 +635,7 @@ def p_func(p):
             scopeDict[0].updateArgList("main", 'child', scopeDict[currScope])
 
         info = findInfo(p[-2][1])
-        info['type'] = 'func' 
+        info['type'] = 'func'
     else:
         raise NameError('no signature for ' + p[-2][1] + '!')
 
@@ -735,7 +735,7 @@ def p_prim_expr(p):
     elif p[2] == '[':
         p[0] = p[1]
         p[0].code += p[3].code
-        
+
         newPlace4 = newTemp()
         p[0].code.append(['=', newPlace4, '4'])
 
@@ -744,10 +744,10 @@ def p_prim_expr(p):
 
         newPlace = newTemp()
         p[0].code.append(['+', newPlace, p[0].placelist[0], newPlace3])
-        
+
         newPlace2 = newTemp()
-        p[0].code.append(['*', newPlace2, newPlace])
-        
+        p[0].code.append(['load', newPlace2, newPlace])
+
 
         p[0].extra['AddrList'] = [newPlace]
         p[0].placelist = [newPlace2]
@@ -786,9 +786,9 @@ def p_selector(p):
     newScopeTable = infoStruct['child']
     if p[2] not in newScopeTable.table:
         raise NameError("Identifier " + p[2] + " is not defined in struct " + structName)
-    
+
     s = p[-1].idList[0] + "." + p[2]
-    if checkId(s,'*'):	
+    if checkId(s,'*'):
         info = findInfo(s)
         p[0].placelist = [info['place']]
         p[0].typeList = [info['type']]
@@ -1006,7 +1006,7 @@ def p_assignment(p):
   for x in range(len(p[1].placelist)):
       p[0].code.append([p[2][1][1], p[1].placelist[x], p[3].placelist[x]])
       if p[1].extra['AddrList'][x] != 'None':
-        p[0].code.append(['load', p[1].extra['AddrList'][x], p[1].placelist[x]])
+        p[0].code.append(['store', p[1].extra['AddrList'][x], p[1].placelist[x]])
   #TODO type checking
 
 def p_assign_op(p):
