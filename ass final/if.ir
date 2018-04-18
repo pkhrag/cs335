@@ -1,0 +1,20 @@
+1, goto, label0
+2, label, label0
+3, =, var1, 4
+4, =, var2, 4
+5, >, var3, var1, var2
+6, =, var6, var3
+7, =, var7, 0
+8, !=, var6, var6, var7
+9, =, var8, 1
+10, -, var6, var6, var8
+11, ifgoto, var6, label2
+12, =, var4, 7
+13, +=, var1, var4
+14, goto, label3
+15, label, label2
+16, =, var5, 7
+17, -=, var1, var5
+18, label, label3
+19, print, var1
+20, retvoid

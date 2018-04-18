@@ -1,0 +1,14 @@
+1, goto, label0
+2, label, label0
+3, =, var5, 2
+4, =, var7, 3
+5, =, var6, var7
+6, =, var9, 1
+7, =, var8, var9
+8, print, var6
+9, =, var11, 0
+10, -, var10, var11, var8
+11, print, var10
+12, =, var13, 0
+13, +, var12, var13, var5
+14, print, var12
