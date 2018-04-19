@@ -1,0 +1,26 @@
+1, goto, label0
+2, label, label0
+3, =, var3, 1
+4, =, var4, 0
+5, =, var5, 1
+6, &&, var6, var3, var4
+7, =, var10, var6
+8, =, var11, 1
+9, -, var10, var11, var10
+10, ifgoto, var10, label4
+11, ++, var4
+12, goto, label5
+13, label, label4
+14, &, var7, var4, var5
+15, =, var8, var7
+16, =, var9, 1
+17, -, var8, var9, var8
+18, ifgoto, var8, label2
+19, ++, var5
+20, goto, label3
+21, label, label2
+22, --, var4
+23, label, label3
+24, label, label5
+25, print, var3
+26, print, var4
