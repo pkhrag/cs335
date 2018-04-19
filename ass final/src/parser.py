@@ -285,6 +285,7 @@ def p_point_type(p):
     '''PointerType : STAR BaseType'''
     p[0] = p[2]
     p[0].typeList[0] = "*"+p[0].typeList[0]
+    p[0].extra['sizeList'] = ['inf'] + p[0].extra['sizeList']
 
 def p_base_type(p):
     '''BaseType : Type'''
@@ -591,12 +592,15 @@ def p_var_spec(p):
         for x in range(len(p[1].placelist)):
             if not (p[3].typeList[x]).startswith('lit'):
                 p[0].code.append(["=", p[1].placelist[x], p[3].placelist[x]])
+
             p[1].placelist[x] = p[3].placelist[x]
 
             #TODO typelist check required
             scope = findScope(p[1].idList[x])
             scopeDict[scope].updateArgList(p[1].idList[x], 'place', p[1].placelist[x])
             scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[2].typeList[0])
+            if p[2].typeList[0][0] == '*':
+                scopeDict[scope].updateArgList(p[1].idList[x], 'sizeList', p[2].extra['sizeList'])
 
 
             tcheck = assignTypeCheck(p[2].typeList[0], p[3].typeList[x])

@@ -72,6 +72,7 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
                         'store': 'movl',
                         'array': 'sub',
                         'pload': 'movl',
+                        'addr': 'lea',
 			'callvoid': "call",
 			'goto': "jmp",
 			'retint': "ret",
@@ -309,6 +310,12 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
                                                 genAsm.genInstr('movl %esp, %' + locationDst)
                                                 addrDes[ir[lineNo].dst]['register'] = locationDst
                                                 addrDes[ir[lineNo].dst]['memory'] = False
+
+                                        elif ir[lineNo].type == 'addr':
+                                                genAsm.genInstr('lea (' + ir[lineNo].src1 + '), %' + locationDst)
+						addrDes[ir[lineNo].dst]['register'] = locationDst
+						addrDes[ir[lineNo].dst]['memory'] = False
+
 
 					else:
 						genAsm.genInstr(instrType + " (" + ir[lineNo].src1 + "), %" + locationDst)
