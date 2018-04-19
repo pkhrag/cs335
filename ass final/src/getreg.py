@@ -68,7 +68,7 @@ def getreg(instrNum, nextUseTable):
         # x Op= y
         x = ir[instrNum].dst
         y = ir[instrNum].src1
-        if check_int(y):
+        if check_int(y) and ir[instrNum].type != 'pload':
             return int(y, 10)
         if ir[instrNum].type == 'callint':
             if regDes['eax']:

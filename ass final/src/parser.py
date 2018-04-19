@@ -190,6 +190,8 @@ def p_type_token(p):
     if len(p) == 2:
         p[0] = Node()
         p[0].typeList.append(p[1])
+        p[0].extra['sizeList'] = [4]
+        #TODO identify rune
     else:
         if not checkId(p[2], '**'):
             raise TypeError("Typename " + p[2] + " not defined")
@@ -197,6 +199,7 @@ def p_type_token(p):
         info = findInfo(p[2], 0)
         # print info['type']
         p[0].typeList.append(info['type'])
+        # TODO struct size
 
 def p_type_lit(p):
     '''TypeLit : ArrayType
@@ -218,8 +221,11 @@ def p_type_opt(p):
 def p_array_type(p):
   '''ArrayType : LSQUARE ArrayLength RSQUARE ElementType'''
   p[0] = Node()
-  p[0].code = p[2].code
+  p[0].code = p[2].code + p[4].code
   p[0].typeList.append("*" + p[4].typeList[0])
+  newVar = newTemp()
+  p[0].code.append(['=', newVar, p[2].placelist[0]])
+  p[0].extra['sizeList'] = [newVar] + p[4].extra['sizeList']
 
 def p_array_length(p):
   ''' ArrayLength : Expression '''
@@ -286,10 +292,10 @@ def p_sign(p):
     info = findInfo(p[-2][1],0)
     if 'label' not in info:
         labeln = newLabel()
-        scopeDict[0].updateArgList(p[-2][1], 'label', labeln) 
+        scopeDict[0].updateArgList(p[-2][1], 'label', labeln)
         scopeDict[0].updateArgList(p[-2][1], 'child', scopeDict[currScope])
 
-            
+
 
 def p_params(p):
     '''Parameters : LPAREN ParameterListOpt RPAREN'''
@@ -320,7 +326,7 @@ def p_param_decl(p):
         p[0] = p[1]
         for x in p[1].idList:
             scopeDict[currScope].updateArgList(x, 'type', p[2].typeList[0])
-            p[0].typeList.append(p[2].typeList[0])      
+            p[0].typeList.append(p[2].typeList[0])
     else:
         p[0] = p[1]
 # ---------------------------------------------------------
@@ -449,7 +455,7 @@ def p_expr_rep(p):
     	p[0].code += p[3].code
     	p[0].placelist += p[3].placelist
     	p[0].typeList += p[3].typeList
-        if 'AddrList' not in p[3].extra: 
+        if 'AddrList' not in p[3].extra:
             p[3].extra['AddrList'] = ['None']
         p[0].extra['AddrList'] += p[3].extra['AddrList']
 
@@ -537,9 +543,18 @@ def p_var_spec(p):
     else:
         if len(p[3].placelist) == 0:
             p[0] = p[1]
+            p[0].code += p[2].code
+            if p[2].typeList[0][0] == '*':
+                newVar = newTemp()
+                p[0].code.append(['=', newVar, 1])
+                for item in p[2].extra['sizeList']:
+                    p[0].code.append(['x=', newVar, item])
             for x in range(len(p[1].idList)):
                 scope = findScope(p[1].idList[x])
                 scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[2].typeList[0])
+                if p[2].typeList[0][0] == '*':
+                    p[0].code.append(['array', p[1].placelist[x], newVar])
+                    scopeDict[scope].updateArgList(p[1].idList[x], 'sizeList', p[2].extra['sizeList'])
             return
 
         p[0] = Node()
@@ -619,7 +634,7 @@ def p_delete_scope(p):
 def p_func_name(p):
     '''FunctionName : IDENTIFIER'''
     p[0] = ["FunctionName", p[1]]
-    
+
 
 def p_func(p):
     '''Function : Signature FunctionBody'''
@@ -627,7 +642,7 @@ def p_func(p):
     p[0] = p[2]
     for x in range(len(p[1].idList)):
         info = findInfo(p[1].idList[x])
-        p[0].code = [['pop', len(p[1].idList) - x - 1, info['place']]] + p[0].code
+        p[0].code = [['pload', info['place'], len(p[1].idList) - x - 1]] + p[0].code
 
     if checkId(p[-2][1], "signatureType"):
         if p[-2][1] == "main":
@@ -635,7 +650,7 @@ def p_func(p):
             scopeDict[0].updateArgList("main", 'child', scopeDict[currScope])
 
         info = findInfo(p[-2][1])
-        info['type'] = 'func' 
+        info['type'] = 'func'
     else:
         raise NameError('no signature for ' + p[-2][1] + '!')
 
@@ -706,6 +721,8 @@ def p_operand_name(p):
     else:
         p[0].typeList = [info['type']]
         p[0].placelist.append(info['place'])
+        p[0].extra['layerNum'] = 0
+        p[0].extra['operand'] = p[1]
     p[0].idList = [p[1]]
 # ---------------------------------------------------------
 
@@ -733,32 +750,53 @@ def p_prim_expr(p):
     if len(p) == 2:
         p[0] = p[1]
     elif p[2] == '[':
+        #TODO multidimension
         p[0] = p[1]
         p[0].code += p[3].code
-        
-        newPlace4 = newTemp()
-        p[0].code.append(['=', newPlace4, '4'])
 
-        newPlace3 = newTemp()
-        p[0].code.append(['x', newPlace3, p[3].placelist[0], newPlace4])
+        info = findInfo(p[1].extra['operand'])
+        sizeList = info['sizeList']
+
+        if p[1].extra['layerNum'] == len(sizeList) - 1:
+            raise IndexError('Dimension of the array ' + p[1].extra['operand'] + " doesn't match")
+
+        newVar = newTemp()
+        p[0].code.append(['=', newVar, p[3].placelist[0]])
+        for item in sizeList[p[1].extra['layerNum']+1:]:
+            p[0].code.append(['x=', newVar, item])
 
         newPlace = newTemp()
-        p[0].code.append(['+', newPlace, p[0].placelist[0], newPlace3])
-        
-        newPlace2 = newTemp()
-        p[0].code.append(['*', newPlace2, newPlace])
-        
+        p[0].code.append(['+', newPlace, p[0].placelist[0], newVar])
+        p[0].placelist = [newPlace]
+        if p[1].extra['layerNum'] == len(sizeList) - 2:
+            newPlace2 = newTemp()
+            p[0].code.append(['load', newPlace2, newPlace])
+            p[0].placelist = [newPlace2]
+
 
         p[0].extra['AddrList'] = [newPlace]
-        p[0].placelist = [newPlace2]
         p[0].typeList = [p[1].typeList[0][1:]]
+        p[0].extra['layerNum'] += 1
 
     elif p[2] == '(':
         p[0] = p[1]
         p[0].code += p[3].code
+
+
+        listVal = []
+        for key,value in enumerate(scopeDict[currScope].table):
+            currInfo = findInfo(value,currScope)
+            listVal.append(value)
+            p[0].code.append(['push', currInfo['place']])
+
+
+
         if len(p[3].placelist):
             for x in p[3].placelist:
                 p[0].code.append(['push', x])
+
+
+
 
         info = findInfo(p[1].idList[0], 0)
         if info['retType'] == 'void':
@@ -768,6 +806,20 @@ def p_prim_expr(p):
             p[0].placelist = [newPlace]
             p[0].code.append(['callint', newPlace, info['label']])
         #TODO type checking
+
+
+
+        t = newTemp()
+        if len(p[3].placelist):
+            for x in p[3].placelist:
+                p[0].code.append(['pop', t])
+
+        for value in listVal[::-1]:
+            currInfo = findInfo(value,currScope)
+            p[0].code.append(['pop', currInfo['place']])
+
+
+
         p[0].typeList = [p[1].typeList[0]]
     else:
         if not len(p[2].placelist):
@@ -781,14 +833,18 @@ def p_selector(p):
     '''Selector : DOT IDENTIFIER'''
     p[0] = Node()
     info = findInfo(p[-1].idList[0])
-    structName = info['type'][4:]
+    structName = info['type']
+    for x in range(len(structName)):
+        if structName[x] != '*':
+            break
+    structName = structName[x+4:]
     infoStruct = findInfo(structName, 0)
     newScopeTable = infoStruct['child']
     if p[2] not in newScopeTable.table:
         raise NameError("Identifier " + p[2] + " is not defined in struct " + structName)
-    
+
     s = p[-1].idList[0] + "." + p[2]
-    if checkId(s,'*'):	
+    if checkId(s,'*'):
         info = findInfo(s)
         p[0].placelist = [info['place']]
         p[0].typeList = [info['type']]
@@ -1006,7 +1062,7 @@ def p_assignment(p):
   for x in range(len(p[1].placelist)):
       p[0].code.append([p[2][1][1], p[1].placelist[x], p[3].placelist[x]])
       if p[1].extra['AddrList'][x] != 'None':
-        p[0].code.append(['load', p[1].extra['AddrList'][x], p[1].placelist[x]])
+        p[0].code.append(['store', p[1].extra['AddrList'][x], p[1].placelist[x]])
   #TODO type checking
 
 def p_assign_op(p):
