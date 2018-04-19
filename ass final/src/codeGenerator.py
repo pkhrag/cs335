@@ -99,8 +99,12 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 
 			if edx is not None:
 				genAsm.genInstr("movl %edx, " + edx)
+				addrDes[edx]['memory'] = True
+				addrDes[edx]['register'] = None 
 			if eax is not None:
 				genAsm.genInstr("movl %eax, " + eax)
+				addrDes[edx]['memory'] = True
+				addrDes[edx]['register'] = None 
 
 
 			genAsm.genInstr("movl $0, %edx")
