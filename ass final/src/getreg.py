@@ -81,10 +81,14 @@ def getreg(instrNum, nextUseTable):
                 if addrDes[x]['register'] != 'ecx':
                     return addrDes[x]['register']
                 elif emptyReg() != None:
-                    addrDes[x]['memory'] = True
+		    if addrDes[x]['register'] == 'ecx':
+			genAsm.genInstr('movl %ecx, ' + x)
+		    	addrDes[x]['memory'] = True
                     return emptyReg()
                 else:
-                    addrDes[x]['memory'] = True
+		    if addrDes[x]['register'] == 'ecx':
+			genAsm.genInstr('movl %ecx, ' + x)
+		    	addrDes[x]['memory'] = True
                     if nextUseTable[instrNum][x]['nextUse'] is not None or regImp(instrNum):
                         return regAlloc(instrNum, nextUseTable, True)
                     else:
