@@ -783,8 +783,10 @@ def p_prim_expr(p):
         p[0].code += p[3].code
 
 
+        listVal = []
         for key,value in enumerate(scopeDict[currScope].table):
             currInfo = findInfo(value,currScope)
+            listVal.append(value)
             p[0].code.append(['push', currInfo['place']])
 
 
@@ -812,8 +814,7 @@ def p_prim_expr(p):
             for x in p[3].placelist:
                 p[0].code.append(['pop', t])
 
-
-        for key,value in enumerate(scopeDict[currScope].table):
+        for value in listVal[::-1]:
             currInfo = findInfo(value,currScope)
             p[0].code.append(['pop', currInfo['place']])
 
