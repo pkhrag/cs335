@@ -1169,12 +1169,20 @@ def p_assignment(p):
   p[0].code = p[1].code
   p[0].code += p[3].code
   for x in range(len(p[1].placelist)):
-      p[0].code.append([p[2][1][1], p[1].placelist[x], p[3].placelist[x]])
+      if p[2][1][1] == '*=':
+        p[0].code.append(['x=', p[1].placelist[x], p[3].placelist[x]])
+      else:
+        p[0].code.append([p[2][1][1], p[1].placelist[x], p[3].placelist[x]])
+        
       if p[1].extra['AddrList'][x] != 'None':
         p[0].code.append(['store', p[1].extra['AddrList'][x], p[1].placelist[x]])
 
       if p[2][1][1] == '=':
         checkt = assignTypeCheck(p[1].typeList[x], p[3].typeList[x])
+        if not checkt:
+            raise TypeError('mismatch of type of expression in LHS and RHS of = operator')
+      else :
+        checkt = oprnTypeCheck(p[1].typeList[x], p[3].typeList[x], p[2][1][1][0])
         if not checkt:
             raise TypeError('mismatch of type of expression in LHS and RHS of = operator')
   #TODO type checking
