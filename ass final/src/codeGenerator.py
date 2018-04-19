@@ -71,6 +71,7 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
                         'load': 'movl',
                         'store': 'movl',
                         'array': 'sub',
+                        'pload': 'movl',
 			'callvoid': "call",
 			'goto': "jmp",
 			'retint': "ret",
@@ -234,13 +235,26 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 		## immediate instructions a+=3 types, what about =,a,b and =,a,4 ???? LOST IT COMPLETELY!
 		elif check_int(ir[lineNo].src1):
 			locationDst = getreg.getreg(lineNo, nextUseTable)
-			isRegDst = addrDes[ir[lineNo].dst]['register']
-			if isRegDst is None:
-				genAsm.genInstr(instrType + " $" + str(locationDst) + ", " + ir[lineNo].dst)
-				addrDes[ir[lineNo].dst]['memory'] = True
 
-			else:
-				genAsm.genInstr(instrType + " $" + str(locationDst) + ", %" + isRegDst)
+
+                        if ir[lineNo].type == 'pload':
+                                offset = 4*int(ir[lineNo].src1)+8
+                                genAsm.genInstr("movl " + hex(offset)+"(%ebp)"+", %"+locationDst)
+                                addrDes[ir[lineNo].dst]['register'] = locationDst
+                                addrDes[ir[lineNo].dst]['memory'] = False
+				for x in regDes:
+		                        if regDes[x] == ir[lineNo].dst:
+                		                regDes[x] = None
+               			regDes[locationDst] = ir[lineNo].dst
+
+                        else:
+                            isRegDst = addrDes[ir[lineNo].dst]['register']
+                            if isRegDst is None:
+                                    genAsm.genInstr(instrType + " $" + str(locationDst) + ", " + ir[lineNo].dst)
+                                    addrDes[ir[lineNo].dst]['memory'] = True
+
+                            else:
+                                    genAsm.genInstr(instrType + " $" + str(locationDst) + ", %" + isRegDst)
 
 			## if destination is not used next
 			# if nextUseTable[lineNo][ir[lineNo].dst]['nextUse'] is None:
@@ -273,7 +287,6 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 				if isInMemory:
 					genAsm.genInstr('movl ('+ir[lineNo].dst+'), %'+locationDst)
 				## ----------
-
 
 				## if source variable is in memory
 				if isRegSrc is None:
@@ -428,9 +441,9 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
                 elif ir[lineNo].type == 'pop':
                         regDst = addrDes[ir[lineNo].dst]['register']
                         if (regDst is None):
-                                genAsm.genInstr('popl ', ir[lineNo].dst)
+                                genAsm.genInstr('popl '+ ir[lineNo].dst)
                         else:
-                                genAsm.genInstr('popl %', regDst)
+                                genAsm.genInstr('popl %'+ regDst)
                                 addrDes[ir[lineNo].dst]['memory'] = False
 
 

@@ -642,7 +642,7 @@ def p_func(p):
     p[0] = p[2]
     for x in range(len(p[1].idList)):
         info = findInfo(p[1].idList[x])
-        p[0].code = [['pop', len(p[1].idList) - x - 1, info['place']]] + p[0].code
+        p[0].code = [['pload', info['place'], len(p[1].idList) - x - 1]] + p[0].code
 
     if checkId(p[-2][1], "signatureType"):
         if p[-2][1] == "main":
@@ -781,9 +781,20 @@ def p_prim_expr(p):
     elif p[2] == '(':
         p[0] = p[1]
         p[0].code += p[3].code
+
+
+        for key,value in enumerate(scopeDict[currScope].table):
+            currInfo = findInfo(value,currScope)
+            p[0].code.append(['push', currInfo['place']])
+
+
+
         if len(p[3].placelist):
             for x in p[3].placelist:
                 p[0].code.append(['push', x])
+
+
+
 
         info = findInfo(p[1].idList[0], 0)
         if info['retType'] == 'void':
@@ -793,6 +804,21 @@ def p_prim_expr(p):
             p[0].placelist = [newPlace]
             p[0].code.append(['callint', newPlace, info['label']])
         #TODO type checking
+
+
+
+        t = newTemp()
+        if len(p[3].placelist):
+            for x in p[3].placelist:
+                p[0].code.append(['pop', t])
+
+
+        for key,value in enumerate(scopeDict[currScope].table):
+            currInfo = findInfo(value,currScope)
+            p[0].code.append(['pop', currInfo['place']])
+
+
+
         p[0].typeList = [p[1].typeList[0]]
     else:
         if not len(p[2].placelist):
