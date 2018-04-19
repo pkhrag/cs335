@@ -8,7 +8,8 @@ def initializeGlobals():
     for x in symbolList:
         if ST.table[x]["type"] == "int":
             f.write( x +":\n\t.int\t0\n")
-    f.write('outFormat:\n\t.asciz\t"%d\\n"\n')
+    f.write('outFormatInt:\n\t.asciz\t"%d\\n"\n')
+    f.write('outFormatStr:\n\t.asciz\t"%s\\n"\n')
     f.write('inFormat:\n\t.ascii\t"%d"\n')
     f.write('\n.text\n\n.global main\n\nmain:\n\n')
     genInstr("call mainMandal")

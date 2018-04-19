@@ -31,10 +31,19 @@ def assignTypeCheck(a,b):
 
 def oprnTypeCheck(a,b,op):
 
+    if op == '+':
+        if a == '*int_t' and b == '*int_t':
+            return True
+        if a == '*rune_t' and b == '*rune_t':
+            return True
     if a.startswith('*') and b.startswith('*'):
             return False
 
+    if a.startswith('type') or b.startswith('type'):
+        return False
+
     if op == '+' or op == '-':
+
 
         if a == b:
             return True
@@ -1109,9 +1118,13 @@ def p_statement(p):
 
 
 def p_print_stmt(p):
-    ''' PrintStmt : PRINT Expression'''
-    p[0] = p[2]
-    p[0].code.append(['print', p[2].placelist[0]])
+    ''' PrintStmt : PRINT PD Expression
+                  | PRINT PS Expression'''
+    p[0] = p[3]
+    if p[2] == "%d":
+        p[0].code.append(['printint', p[3].placelist[0]])
+    if p[2] == "%s":
+        p[0].code.append(['printstr', p[3].placelist[0]])
 
 def p_scan_stmt(p):
     ''' ScanStmt : SCAN Expression'''
@@ -1653,8 +1666,8 @@ def p_empty(p):
 
 
 def p_error(p):
-  print("Syntax error in input!")
   print(p)
+  raise SyntaxError("Syntax error in the code!")
 
 
 # Build the parser

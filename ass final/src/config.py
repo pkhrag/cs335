@@ -11,7 +11,7 @@ type_3 = ['=', '+=', '-=', 'x=', '&=',
            'ifgoto', 'callint', 'load', 'store', 'array', 'pload', 'addr']
 
 # Corresponds to 2 operand instructions
-type_2 = ['++', '!', '--', 'label', 'print', 'scan', 'callvoid', 'goto', 'retint', 'push', 'pop']
+type_2 = ['++', '!', '--', 'label', 'printint', 'printstr', 'scan', 'callvoid', 'goto', 'retint', 'push', 'pop']
 
 type_1 = ['retvoid']
 
