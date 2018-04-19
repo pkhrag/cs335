@@ -20,7 +20,16 @@ labelDict = {}
 
 
 def assignTypeCheck(a,b):
+    if a == b:
         return True
+    if b.startswith('lit') and a==b[3:]:
+        return True
+    if a.startswith('lit') and a[3:] == b:
+        return True
+
+    return False
+
+
 
 
 def checkId(identifier, typeOf):
@@ -295,11 +304,14 @@ def p_sign(p):
     else:
         scopeDict[0].updateArgList(p[-2][1], 'retType', p[2].typeList[0])
 
+    p[0].extra['fName'] = p[-2][1]
     info = findInfo(p[-2][1],0)
     if 'label' not in info:
         labeln = newLabel()
         scopeDict[0].updateArgList(p[-2][1], 'label', labeln)
         scopeDict[0].updateArgList(p[-2][1], 'child', scopeDict[currScope])
+
+    p[0].typeList = p[2].typeList
 
 
 
@@ -624,7 +636,6 @@ def p_func_decl(p):
     '''FunctionDecl : FUNC FunctionName CreateScope Function EndScope
                     | FUNC FunctionName CreateScope Signature EndScope'''
 
-    print p[4]
 
     if not len(p[4].code):
         p[0] = Node()
@@ -659,9 +670,9 @@ def p_func_name(p):
 
 
 def p_func(p):
-    '''Function : Signature  FunctionBody'''
+    '''Function : Signature funMark FunctionBody'''
     # TODO typechecking of return type. It should be same as defined in signature
-    p[0] = p[2]
+    p[0] = p[3]
     for x in range(len(p[1].idList)):
         info = findInfo(p[1].idList[x])
         p[0].code = [['pload', info['place'], len(p[1].idList) - x - 1]] + p[0].code
@@ -680,6 +691,13 @@ def p_func(p):
 def p_funMark(p):
     ''' funMark : '''
 
+    fName =  p[-1].extra['fName']
+    scopeDict[currScope].updateExtra('fName', fName)
+    if len(p[-1].typeList) > 0:
+        scopeDict[currScope].updateExtra('retT', p[-1].typeList[0])
+
+    else:
+        scopeDict[currScope].updateExtra('retT', 'void')
 
 def p_func_body(p):
     '''FunctionBody : Block'''
@@ -1321,9 +1339,20 @@ def p_conditionopt(p):
 def p_return(p):
   '''ReturnStmt : RETURN ExpressionPureOpt'''
   p[0] = p[2]
+
+  retT = scopeDict[currScope].extra['retT'];
+  fName = scopeDict[currScope].extra['fName'];
+
+
+
   if len(p[2].placelist) != 0:
+    checkt = assignTypeCheck(retT, p[2].typeList[0])
+    if not checkt:
+        raise TypeError('function ' + fName+ ' return type: ' + retT + ' doesnt matches with return stmt: ' +p[2].typeList[0])
     p[0].code.append(["retint", p[2].placelist[0]])
   else:
+    if(retT != 'void'):
+        raise TypeError('function ' + fName+ ' return type: ' + retT + ' doesnt matches with return stmt: void')
     p[0].code.append(["retvoid"])
 
 def p_expression_pure_opt(p):
