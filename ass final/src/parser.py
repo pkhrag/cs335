@@ -24,8 +24,46 @@ def assignTypeCheck(a,b):
         return True
     if b.startswith('lit') and a==b[3:]:
         return True
-    if a.startswith('lit') and a[3:] == b:
-        return True
+
+
+    return False
+
+
+def oprnTypeCheck(a,b,op):
+
+    if a.startswith('*') and b.startswith('*'):
+            return False
+
+    if op == '+' or op == '-':
+
+        if a == b:
+            return True
+        if a.startswith('lit') and a[3:] == b:
+            return True
+        if b.startswith('lit') and b[3:] == a:
+            return True
+
+        if a.startswith('lit') and b.startswith('lit') and a[3:] == b[3:]:
+            return True
+
+        if a.startswith('*') and (b=='int_t' or b=='litint_t'):
+            return True
+
+        if b.startswith('*') and (a=='int_t' or a=='litint_t'):
+            return True
+
+    else :
+
+        if a == b:
+            return True
+        if a.startswith('lit') and a[3:] == b:
+            return True
+        if b.startswith('lit') and b[3:] == a:
+            return True
+
+        if a.startswith('lit') and b.startswith('lit') and a[3:] == b[3:]:
+            return True
+
 
     return False
 
@@ -971,10 +1009,9 @@ def p_expr(p):
         p[0].placelist = [newPlace]
 
         #TODO typechecking based on typeList and update type of p[0]
-        if p[2] == '+' or p[2] == '-':
-            pass
-        else:
-            pass
+        checkt = oprnTypeCheck(p[1].typeList[0], p[3].typeList[0], p[2])
+        if not checkt:
+            raise TypeError("Expression1 of type: " + p[1].typeList[0] + " with operator: " + p[2] + " with Expression2 of type: " + p[3].typeList)
 
     else:
         p[0] = p[1]
@@ -1142,10 +1179,22 @@ def p_assignment(p):
           p[0].code.append(['/', p[1].placelist[x], p[1].placelist[x], p[3].placelist[x]])
       elif p[2][1][1] == '%=':
           p[0].code.append(['%', p[1].placelist[x], p[1].placelist[x], p[3].placelist[x]])
+      elif p[2][1][1] == '*=':
+        p[0].code.append(['x=', p[1].placelist[x], p[3].placelist[x]])
       else:
-          p[0].code.append([p[2][1][1], p[1].placelist[x], p[3].placelist[x]])
+        p[0].code.append([p[2][1][1], p[1].placelist[x], p[3].placelist[x]])
+
       if p[1].extra['AddrList'][x] != 'None':
         p[0].code.append(['store', p[1].extra['AddrList'][x], p[1].placelist[x]])
+
+      if p[2][1][1] == '=':
+        checkt = assignTypeCheck(p[1].typeList[x], p[3].typeList[x])
+        if not checkt:
+            raise TypeError('mismatch of type of expression in LHS and RHS of = operator')
+      else :
+        checkt = oprnTypeCheck(p[1].typeList[x], p[3].typeList[x], p[2][1][1][0])
+        if not checkt:
+            raise TypeError('mismatch of type of expression in LHS and RHS of = operator')
   #TODO type checking
 
 def p_assign_op(p):
@@ -1313,6 +1362,10 @@ def p_for(p):
   p[0] = Node()
   label1 = p[3].extra['before']
   p[0].code = p[3].code+p[4].code
+
+  if 'forInc' in p[3].extra:
+      p[0].code += p[3].extra['forInc']
+
   p[0].code += [['goto', label1]]
   label2 = p[3].extra['after']
   p[0].code += [['label', label2]]
@@ -1345,7 +1398,8 @@ def p_forclause(p):
     newVar = newTemp()
     newVar2 = newTemp()
     p[0].code += [['=', newVar, p[3].placelist[0]],['=',newVar2,'1'],['-',newVar,newVar2,newVar],['ifgoto', newVar, label2]]
-  p[0].code += p[5].code
+  # p[0].code += p[5].code
+  p[0].extra['forInc'] = p[5].code
 
 
 
