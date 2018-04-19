@@ -8,7 +8,7 @@ keywords = {'STRUCT', 'FUNC', 'CONST', 'TYPE', 'VAR', 'IF', 'ELSE', 'SWITCH', 'C
             'DEFAULT', 'FOR', 'RANGE', 'RETURN', 'BREAK', 'CONTINUE', 'GOTO', 'PACKAGE', 'IMPORT', 'INT_T', 'FLOAT_T', 'UINT_T', 'COMPLEX_T', 'RUNE_T', 'BOOL_T', 'STRING_T', 'TYPECAST'}
 
 operators = {'PLUS', 'MINUS', 'STAR', 'DIVIDE', 'MOD', 'ASSIGN', 'AND', 'LOGICAL_AND', 'INCR', 'DECR', 'LPAREN', 'RPAREN', 'OR', 'XOR', 'LSHIFT', 'RSHIFT', 'PLUS_ASSIGN', 'MINUS_ASSIGN', 'STAR_ASSIGN', 'DIVIDE_ASSIGN', 'MOD_ASSIGN', 'AND_ASSIGN', 'OR_ASSIGN', 'XOR_ASSIGN', 'LSHIFT_ASSIGN', 'RSHIFT_ASSIGN', 'LOGICAL_OR', 'EQUALS', 'LESSER', 'GREATER', 'NOT', 'NOT_ASSIGN', 'LESS_EQUALS', 'MORE_EQUALS', 'QUICK_ASSIGN', 'LSQUARE', 'RSQUARE', 'LCURL',
-             'RCURL', 'COMMA', 'DOT', 'SEMICOLON', 'COLON'}
+             'RCURL', 'COMMA', 'DOT', 'SEMICOLON', 'COLON', 'PD', 'PS'}
 
 reserved = {}
 for r in keywords:
@@ -73,6 +73,8 @@ t_COMMA = r','
 t_DOT = r'\.'
 t_SEMICOLON = r';'
 t_COLON = r':'
+t_PD = r'%d'
+t_PS = r'%s'
 
 # Integer based reg variables
 decimal_lit = "(0|([1-9][0-9]*))"

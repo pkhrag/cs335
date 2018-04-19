@@ -66,7 +66,8 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 			'++': "incl",
 			'--': "decl",
 			'label' : "label",
-			'print': "call printf",
+			'printint': "call printf",
+			'printstr': "call printf",
 			'scan' : "call scanf",
 			'ifgoto': "jne",
 			'callint': "call",
@@ -411,15 +412,26 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 				genAsm.genInstr("pushl %ebp")
 				genAsm.genInstr("movl %esp,  %ebp")
 
-		elif ir[lineNo].type == 'print':
+		elif ir[lineNo].type == 'printint':
 			if addrDes[ir[lineNo].dst]['register'] is None:
 				genAsm.genInstr("pushl " + ir[lineNo].dst)
-				genAsm.genInstr("pushl $outFormat")
+				genAsm.genInstr("pushl $outFormatInt")
 				genAsm.genInstr(instrType)
 
 			else:
 				genAsm.genInstr("pushl %" + addrDes[ir[lineNo].dst]['register'])
-				genAsm.genInstr("pushl $outFormat")
+				genAsm.genInstr("pushl $outFormatInt")
+				genAsm.genInstr(instrType)
+
+		elif ir[lineNo].type == 'printstr':
+			if addrDes[ir[lineNo].dst]['register'] is None:
+				genAsm.genInstr("pushl " + ir[lineNo].dst)
+				genAsm.genInstr("pushl $outFormatStr")
+				genAsm.genInstr(instrType)
+
+			else:
+				genAsm.genInstr("pushl %" + addrDes[ir[lineNo].dst]['register'])
+				genAsm.genInstr("pushl $outFormatStr")
 				genAsm.genInstr(instrType)
 
 		elif ir[lineNo].type == 'scan':
