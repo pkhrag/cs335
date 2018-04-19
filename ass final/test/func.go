@@ -1,11 +1,12 @@
 package mai;
 import "fmt";
 
-
-func main() {
-	return;
+func foo() int_t{
+	return ;
 };
 
-func foo() *int_t{
-	return 2;
+func main() {
+	var i int_t = foo();
+	print i;
+	return;
 };
