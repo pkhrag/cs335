@@ -18,6 +18,11 @@ labelSeq = 1
 labelDict = {}
 
 
+
+def assignTypeCheck(a,b):
+        return True
+
+
 def checkId(identifier, typeOf):
     if typeOf == "global":
         if scopeDict[0].getInfo(identifier) is not None:
@@ -190,8 +195,10 @@ def p_type_token(p):
     if len(p) == 2:
         p[0] = Node()
         p[0].typeList.append(p[1])
-        p[0].extra['sizeList'] = [4]
-        #TODO identify rune
+        if p[1] == 'int_t':
+            p[0].extra['sizeList'] = [4]
+        else:
+            p[0].extra['sizeList'] = [1]
     else:
         if not checkId(p[2], '**'):
             raise TypeError("Typename " + p[2] + " not defined")
@@ -277,7 +284,6 @@ def p_base_type(p):
 
 
 # ---------------FUNCTION TYPES----------------------------
-#TODO recursion
 def p_sign(p):
     '''Signature : Parameters TypeOpt'''
     p[0] = p[1]
@@ -394,13 +400,21 @@ def p_const_spec(p):
 
     for x in range(len(p[1].placelist)):
         if (p[4].typeList[x]).startswith('lit'):
+          #  if p[2].typeList[0] != p[4].typeList[x][3:] :
+           #     raise TypeError('Type of ' + p[1].idList[x] + ' doesn\'t match with expresstion!')
             p[0].code.append(["=", p[1].placelist[x], p[4].placelist[x]])
+
         p[1].placelist[x] = p[4].placelist[x]
         scope = findScope(p[1].idList[x])
         scopeDict[scope].updateArgList(p[1].idList[x], 'place', p[1].placelist[x])
 
         # type insertion
         scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[2].typeList[0])
+        #if p[2].typeList[0] != p[4].typeList[x] :
+         #   raise TypeError('Type of ' + p[1].idList[x] + ' doesn\'t match with expresstion!')
+        tcheck = assignTypeCheck(p[2].typeList[0],p[4].typeList[x])
+        if not tcheck:
+             raise TypeError('Type of ' + p[1].idList[x] + ' doesn\'t match with expresstion!')
 
 
     #TODO type checking
@@ -572,6 +586,11 @@ def p_var_spec(p):
             scopeDict[scope].updateArgList(p[1].idList[x], 'place', p[1].placelist[x])
             scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[2].typeList[0])
 
+
+            tcheck = assignTypeCheck(p[2].typeList[0], p[3].typeList[x])
+            if not tcheck:
+                raise TypeError("Error : type of " +p[1].idList[x] + " doesnt match with expression ")
+
 def p_expr_list_opt(p):
     '''ExpressionListOpt : ASSIGN ExpressionList
                          | epsilon'''
@@ -604,6 +623,9 @@ def p_short_var_decl(p):
 def p_func_decl(p):
     '''FunctionDecl : FUNC FunctionName CreateScope Function EndScope
                     | FUNC FunctionName CreateScope Signature EndScope'''
+
+    print p[4]
+
     if not len(p[4].code):
         p[0] = Node()
         return
@@ -637,7 +659,7 @@ def p_func_name(p):
 
 
 def p_func(p):
-    '''Function : Signature FunctionBody'''
+    '''Function : Signature  FunctionBody'''
     # TODO typechecking of return type. It should be same as defined in signature
     p[0] = p[2]
     for x in range(len(p[1].idList)):
@@ -653,6 +675,10 @@ def p_func(p):
         info['type'] = 'func'
     else:
         raise NameError('no signature for ' + p[-2][1] + '!')
+
+
+def p_funMark(p):
+    ''' funMark : '''
 
 
 def p_func_body(p):
@@ -682,7 +708,7 @@ def p_basic_lit(p):
                 | I HEX
                 | F FLOAT
                 | C IMAGINARY
-                | I RUNE
+                | R RUNE
                 | S STRING'''
     p[0] = Node()
     name = newTemp()
@@ -693,6 +719,11 @@ def p_basic_lit(p):
 def p_I(p):
     ''' I : '''
     p[0] = 'int_t'
+
+
+def p_R(p):
+    ''' R : '''
+    p[0] = 'rune_t'
 
 
 def p_F(p):
@@ -715,6 +746,8 @@ def p_operand_name(p):
     p[0] = Node()
     info = findInfo(p[1])
     #print info
+
+
     if info['type'] == 'func' or info['type'] == 'signatureType':
         p[0].typeList = [info['retType']]
         p[0].placelist.append(info['label'])
@@ -750,7 +783,6 @@ def p_prim_expr(p):
     if len(p) == 2:
         p[0] = p[1]
     elif p[2] == '[':
-        #TODO multidimension
         p[0] = p[1]
         p[0].code += p[3].code
 
@@ -907,6 +939,10 @@ def p_expr(p):
         p[0].placelist = [newPlace]
 
         #TODO typechecking based on typeList and update type of p[0]
+        if p[2] == '+' or p[2] == '-':
+            pass
+        else:
+            pass
 
     else:
         p[0] = p[1]
@@ -938,7 +974,17 @@ def p_unary_expr(p):
             p[0].code.append([p[1][1],newPlace, newPlace2, p[2].placelist[0]])
 
         else:
-            p[0].code.append([p[1][1], newPlace, p[2].placelist[0]])
+
+            if p[1][1] == '*':
+                p[0].code.append(['load', newPlace, p[2].placelist[0]])
+                if p[2].typeList[0][0] != '*':
+                    raise TypeError("Type of deference expression is not a valid pointer type")
+                p[0].typeList[0] = p[2].typeList[0][1:]
+
+            else:
+                p[0].code.append(['addr', newPlace, p[2].placelist[0]])
+                p[0].typeList[0] = '*' + p[2].typeList[0]
+
         p[0].placelist = [newPlace]
 
 def p_unary_op(p):
