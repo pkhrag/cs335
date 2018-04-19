@@ -1345,7 +1345,8 @@ def p_for(p):
   label1 = p[3].extra['before']
   p[0].code = p[3].code+p[4].code
 
-  p[0].code += p[3].extra['forInc']
+  if 'forInc' in p[3].extra:
+      p[0].code += p[3].extra['forInc']
 
   p[0].code += [['goto', label1]]
   label2 = p[3].extra['after']
