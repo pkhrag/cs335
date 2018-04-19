@@ -3,7 +3,7 @@ import symbol
 
 # Corresponds to 4 operand instructions
 # x is multiply and * is dereference
-type_4 = ['+', '-', 'x', '/', '%', '&', '|', '^', '<<', '>>', '==', '<', '>', '!=', '<=', '>=']
+type_4 = ['+', '-', 'x', '/', '%', '&', '|', '^', '==', '<', '>', '!=', '<=', '>=']
 
 # Corresponds to 3 operand instructions
 type_3 = ['=', '+=', '-=', 'x=', '&=',

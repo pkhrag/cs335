@@ -960,6 +960,12 @@ def p_expr(p):
             p[0].code.append(["&",newPlace,p[1].placelist[0], p[3].placelist[0] ])
         elif p[2] == '||':
             p[0].code.append(["|",newPlace,p[1].placelist[0], p[3].placelist[0] ])
+        elif p[2] == '<<':
+            p[0].code.append(["=",newPlace, p[1].placelist[0]])
+            p[0].code.append(["<<=",newPlace, p[3].placelist[0]])
+        elif p[2] == '>>':
+            p[0].code.append(["=",newPlace, p[1].placelist[0]])
+            p[0].code.append([">>=",newPlace, p[3].placelist[0]])
         else:
             p[0].code.append([p[2],newPlace,p[1].placelist[0], p[3].placelist[0] ])
         p[0].placelist = [newPlace]
@@ -1132,7 +1138,12 @@ def p_assignment(p):
   p[0].code = p[1].code
   p[0].code += p[3].code
   for x in range(len(p[1].placelist)):
-      p[0].code.append([p[2][1][1], p[1].placelist[x], p[3].placelist[x]])
+      if p[2][1][1] == '/=':
+          p[0].code.append(['/', p[1].placelist[x], p[1].placelist[x], p[3].placelist[x]])
+      elif p[2][1][1] == '%=':
+          p[0].code.append(['%', p[1].placelist[x], p[1].placelist[x], p[3].placelist[x]])
+      else:
+          p[0].code.append([p[2][1][1], p[1].placelist[x], p[3].placelist[x]])
       if p[1].extra['AddrList'][x] != 'None':
         p[0].code.append(['store', p[1].extra['AddrList'][x], p[1].placelist[x]])
   #TODO type checking

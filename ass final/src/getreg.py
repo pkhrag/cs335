@@ -23,11 +23,11 @@ def splitReg(reg, var):
     regDes[reg] = None
 
 # finds and splits a register
-def regAlloc(instrNum, nextUseTable):
+def regAlloc(instrNum, nextUseTable, shiftType = False):
     farthest = 0
     reg = None
     for key, value in regDes.iteritems():
-        if key != 'esp' and key != 'ebp':
+        if key != 'esp' and key != 'ebp' and (shiftType == False or key != 'ecx'):
             var = value
             if (var not in nextUseTable[instrNum]) or (nextUseTable[instrNum][var]['nextUse'] is None):
                 splitReg(key, var)
@@ -76,6 +76,20 @@ def getreg(instrNum, nextUseTable):
                 splitReg('eax', var)
             return 'eax'
         else:
+            # shifting case
+            if ir[instrNum].type == '<<=' or ir[instrNum].type == '>>=':
+                if addrDes[x]['register'] != 'ecx':
+                    return addrDes[x]['register']
+                elif emptyReg() != None:
+                    addrDes[x]['memory'] = True
+                    return emptyReg()
+                else:
+                    addrDes[x]['memory'] = True
+                    if nextUseTable[instrNum][x]['nextUse'] is not None or regImp(instrNum):
+                        return regAlloc(instrNum, nextUseTable, True)
+                    else:
+                        return None # Use it's default memory location defined in .data section
+
             # x Op= y ~ x = x Op y, so same rule as above
             # If already in register, return it
             if addrDes[x]['register']:

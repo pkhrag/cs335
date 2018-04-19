@@ -61,6 +61,8 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 			'&=': "and",
 			'|=': "or",
 			'^=': "xor",
+                        '<<=': 'shl',
+                        '>>=': 'shr',
 			'++': "incl",
 			'--': "decl",
 			'label' : "label",
@@ -316,6 +318,13 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 						addrDes[ir[lineNo].dst]['register'] = locationDst
 						addrDes[ir[lineNo].dst]['memory'] = False
 
+                                        elif ir[lineNo].type == '>>=' or ir[lineNo].type == '<<=':
+                                                genAsm.genInstr('pushl %ecx')
+                                                genAsm.genInstr('movl (' + ir[lineNo].src1 + '), %ecx')
+                                                genAsm.genInstr(instrType + " %cl, %" + locationDst)
+                                                genAsm.genInstr('popl %ecx')
+                                                addrDes[ir[lineNo].dst]['register'] = locationDst
+                                                addrDes[ir[lineNo].dst]['memory'] = False
 
 					else:
 						genAsm.genInstr(instrType + " (" + ir[lineNo].src1 + "), %" + locationDst)
@@ -340,6 +349,15 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
                                                 genAsm.genInstr('movl %esp, %' + locationDst)
                                                 addrDes[ir[lineNo].dst]['register'] = locationDst
                                                 addrDes[ir[lineNo].dst]['memory'] = False
+
+                                        elif ir[lineNo].type == '>>=' or ir[lineNo].type == '<<=':
+                                                genAsm.genInstr('pushl %ecx')
+                                                genAsm.genInstr('movl %' + isRegSrc + ', %ecx')
+                                                genAsm.genInstr(instrType + " %cl, %" + locationDst)
+                                                genAsm.genInstr('popl %ecx')
+                                                addrDes[ir[lineNo].dst]['register'] = locationDst
+                                                addrDes[ir[lineNo].dst]['memory'] = False
+
 
 					elif locationDst != isRegSrc:
 						genAsm.genInstr(instrType + " %" + isRegSrc + ", %" + locationDst)
