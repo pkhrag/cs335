@@ -7,5 +7,6 @@
 7, callint, var2, label1
 8, pop, var1
 9, =, var1, var2
-10, print, var2
-11, retvoid
+10, =, var4, var2
+11, print, var2
+12, retvoid
