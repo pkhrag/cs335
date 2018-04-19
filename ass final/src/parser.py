@@ -41,7 +41,7 @@ def oprnTypeCheck(a,b,op):
 
     if a.startswith('type') or b.startswith('type'):
         return False
-    
+
     if op == '+' or op == '-':
 
 
@@ -1666,8 +1666,8 @@ def p_empty(p):
 
 
 def p_error(p):
-  print("Syntax error in input!")
   print(p)
+  raise SyntaxError("Syntax error in the code!")
 
 
 # Build the parser
