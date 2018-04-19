@@ -616,17 +616,23 @@ def p_var_spec(p):
             scopeDict[scope].updateArgList(p[1].idList[x], 'place', p[1].placelist[x])
     else:
         if len(p[3].placelist) == 0:
+
             p[0] = p[1]
             p[0].code += p[2].code
+            
+
             if p[2].typeList[0][0] == '*':
+                
                 newVar = newTemp()
-                p[0].code.append(['=', newVar, 1])
+                if p[2].extra['sizeList'][0] != 'inf':
+                    p[0].code.append(['=', newVar, 1])
                 for item in p[2].extra['sizeList']:
-                    p[0].code.append(['x=', newVar, item])
+                    if p[2].extra['sizeList'][0] != 'inf':
+                        p[0].code.append(['x=', newVar, item])
             for x in range(len(p[1].idList)):
                 scope = findScope(p[1].idList[x])
                 scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[2].typeList[0])
-                if p[2].typeList[0][0] == '*':
+                if p[2].typeList[0][0] == '*' and p[2].extra['sizeList'][0] != 'inf':
                     p[0].code.append(['array', p[1].placelist[x], newVar])
                     scopeDict[scope].updateArgList(p[1].idList[x], 'sizeList', p[2].extra['sizeList'])
             return
@@ -1013,6 +1019,40 @@ def p_expr(p):
         elif p[2] == '>>':
             p[0].code.append(["=",newPlace, p[1].placelist[0]])
             p[0].code.append([">>=",newPlace, p[3].placelist[0]])
+
+
+        # p + 2 should be actually p + 8 for that
+        elif p[2] == '+' and (p[1].typeList[0] == 'litint_t' or p[1].typeList[0] == 'int_t') and (p[3].typeList[0]).startswith('*'):
+            t = newTemp()
+            for x in range(len(p[3].typeList[0])):
+                if p[3].typeList[0][x] != '*':
+                    break
+
+            if p[3].typeList[0][x:] == 'rune_t':
+                p[0].code.append(['=',t,'1'])
+            else:
+                p[0].code.append(['=',t,'4'])
+            p[0].code.append(['=',t,'4'])
+            p[0].code.append(['x',t,t,p[1].placelist[0]])
+            p[0].code.append(['+',newPlace,t,p[3].placelist[0]])
+
+
+        elif p[2] == '+' and (p[3].typeList[0] == 'int_t' or p[3].typeList[0] == 'litint_t') and (p[1].typeList[0]).startswith('*'):
+            t = newTemp()
+            for x in range(len(p[1].typeList[0])):
+                if p[1].typeList[0][x] != '*':
+                    break
+
+            if p[1].typeList[0][x:] == 'rune_t':
+                p[0].code.append(['=',t,'1'])
+            else:
+                p[0].code.append(['=',t,'4'])
+            p[0].code.append(['x',t,t,p[3].placelist[0]])
+            p[0].code.append(['+',newPlace,t,p[1].placelist[0]])
+
+
+
+
         else:
             p[0].code.append([p[2],newPlace,p[1].placelist[0], p[3].placelist[0] ])
         p[0].placelist = [newPlace]
