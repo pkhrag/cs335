@@ -34,7 +34,11 @@ def oprnTypeCheck(a,b,op):
     if a.startswith('*') and b.startswith('*'):
             return False
 
+    if a.startswith('type') or b.startswith('type'):
+        return False
+    
     if op == '+' or op == '-':
+
 
         if a == b:
             return True
