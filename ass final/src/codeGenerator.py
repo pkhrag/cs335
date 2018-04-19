@@ -8,7 +8,7 @@ def codeGen(x, nextUseTable):
 	end = x[1]
  	# print "heya"
 	flag = 0
-	if ir[end].type == 'ifgoto' or ir[end].type == 'print' or ir[end].type == 'scan' or ir[end].type == 'retint' or ir[end].type == 'retvoid' or ir[end].type == 'goto' or ir[end].type == 'callint' or ir[end].type == 'callvoid':
+	if ir[end].type == 'ifgoto' or ir[end].type == 'printint' or ir[end].type == 'printstr' or ir[end].type == 'scan' or ir[end].type == 'retint' or ir[end].type == 'retvoid' or ir[end].type == 'goto' or ir[end].type == 'callint' or ir[end].type == 'callvoid':
 		flag = 1
 
 	for lineNo in range(start,end+1-flag):
@@ -25,6 +25,10 @@ def codeGen(x, nextUseTable):
 			addrDes[symbol]['memory'] = True
 			addrDes[symbol]['register'] = None
 			regDes[reg] = None
+		elif symbol is not None:
+			addrDes[symbol]['register'] = None
+			regDes[reg] = None
+			
 
 	if flag:
 		genAsm.genInstr("# " + ir[end].instr)
@@ -101,11 +105,11 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 			if edx is not None:
 				genAsm.genInstr("movl %edx, " + edx)
 				addrDes[edx]['memory'] = True
-				addrDes[edx]['register'] = None 
+				addrDes[edx]['register'] = None
 			if eax is not None:
 				genAsm.genInstr("movl %eax, " + eax)
-				addrDes[edx]['memory'] = True
-				addrDes[edx]['register'] = None 
+				addrDes[eax]['memory'] = True
+				addrDes[eax]['register'] = None 
 
 
 			genAsm.genInstr("movl $0, %edx")
