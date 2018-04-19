@@ -994,6 +994,10 @@ def p_expr(p):
         newPlace = newTemp()
         if p[2] == "*":
             p[0].code.append(["x",newPlace,p[1].placelist[0], p[3].placelist[0] ])
+        elif p[2] == '&&':
+            p[0].code.append(["&",newPlace,p[1].placelist[0], p[3].placelist[0] ])
+        elif p[2] == '||':
+            p[0].code.append(["|",newPlace,p[1].placelist[0], p[3].placelist[0] ])
         else:
             p[0].code.append([p[2],newPlace,p[1].placelist[0], p[3].placelist[0] ])
         p[0].placelist = [newPlace]

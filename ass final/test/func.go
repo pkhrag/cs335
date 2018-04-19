@@ -1,5 +1,4 @@
 package mai;
-
 import "fmt";
 
 func foo() int_t{
