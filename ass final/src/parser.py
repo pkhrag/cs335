@@ -393,6 +393,20 @@ def p_param_decl(p):
         for x in p[1].idList:
             scopeDict[currScope].updateArgList(x, 'type', p[2].typeList[0])
             p[0].typeList.append(p[2].typeList[0])
+            if (p[2].typeList[0]).startswith('*'):
+                info = findInfo(x)
+
+                t = p[2].typeList[0]
+                for i in range(len(t)):
+                    if t[i] != '*':
+                        break
+                if t[i:] == 'int_t':
+                    scopeDict[currScope].updateArgList(x, 'sizeList', ['inf',4])
+                elif t[i:] == 'rune_t':
+                    scopeDict[currScope].updateArgList(x, 'sizeList', ['inf',1])
+
+
+                
     else:
         p[0] = p[1]
 # ---------------------------------------------------------
@@ -862,6 +876,7 @@ def p_prim_expr(p):
         p[0].code += p[3].code
 
         info = findInfo(p[1].extra['operand'])
+
         sizeList = info['sizeList']
 
         if p[1].extra['layerNum'] == len(sizeList) - 1:
