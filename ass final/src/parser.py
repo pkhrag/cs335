@@ -1613,8 +1613,11 @@ def p_return(p):
   '''ReturnStmt : RETURN ExpressionPureOpt'''
   p[0] = p[2]
 
-  retT = scopeDict[currScope].extra['retT'];
-  fName = scopeDict[currScope].extra['fName'];
+  for scope in scopeStack[::-1]:
+    if 'fName' in scopeDict[scope].extra:
+      fName = scopeDict[scope].extra['fName']
+      retT = scopeDict[scope].extra['retT']
+        
 
 
 

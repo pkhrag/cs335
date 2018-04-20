@@ -1,0 +1,137 @@
+1, goto, label0
+2, label, label1
+3, pload, var4, 0
+4, pload, var3, 1
+5, pload, var2, 2
+6, pload, var1, 3
+7, pload, var0, 4
+8, >=, var5, var3, var2
+9, =, var35, var5
+10, =, var36, 0
+11, !=, var35, var35, var36
+12, =, var37, 1
+13, -, var35, var35, var37
+14, ifgoto, var35, label6
+15, -, var7, var3, var2
+16, =, var8, 2
+17, /, var9, var7, var8
+18, +, var10, var2, var9
+19, =, var6, var10
+20, =, var11, var10
+21, x=, var11, 4
+22, +, var12, var0, var11
+23, load, var13, var12
+24, ==, var14, var13, var4
+25, =, var17, var14
+26, =, var18, 0
+27, !=, var17, var17, var18
+28, =, var19, 1
+29, -, var17, var17, var19
+30, ifgoto, var17, label2
+31, =, var15, 1
+32, +, var16, var10, var15
+33, retint, var16
+34, goto, label3
+35, label, label2
+36, label, label3
+37, =, var20, var10
+38, x=, var20, 4
+39, +, var21, var0, var20
+40, load, var22, var21
+41, >, var23, var22, var4
+42, =, var28, var23
+43, =, var29, 0
+44, !=, var28, var28, var29
+45, =, var30, 1
+46, -, var28, var28, var30
+47, ifgoto, var28, label4
+48, =, var24, 1
+49, -, var25, var10, var24
+50, push, var0
+51, push, var1
+52, push, var2
+53, push, var25
+54, push, var4
+55, callint, var26, label1
+56, pop, var27
+57, pop, var27
+58, pop, var27
+59, pop, var27
+60, pop, var27
+61, retint, var26
+62, goto, label5
+63, label, label4
+64, label, label5
+65, =, var31, 1
+66, +, var32, var10, var31
+67, push, var10
+68, push, var0
+69, push, var1
+70, push, var32
+71, push, var3
+72, push, var4
+73, callint, var33, label1
+74, pop, var34
+75, pop, var34
+76, pop, var34
+77, pop, var34
+78, pop, var34
+79, pop, var10
+80, retint, var33
+81, goto, label7
+82, label, label6
+83, label, label7
+84, =, var38, 1
+85, =, var40, 0
+86, -, var39, var40, var38
+87, retint, var39
+88, label, label0
+89, scan, var43
+90, =, var45, var43
+91, =, var46, 1
+92, x=, var46, var45
+93, x=, var46, 4
+94, array, var44, var46
+95, =, var47, 0
+96, =, var48, var47
+97, label, label9
+98, <, var49, var48, var43
+99, =, var50, var49
+100, =, var51, 1
+101, -, var50, var51, var50
+102, ifgoto, var50, label10
+103, scan, var41
+104, =, var52, var48
+105, x=, var52, 4
+106, +, var53, var44, var52
+107, load, var54, var53
+108, =, var54, var41
+109, store, var53, var54
+110, ++, var48
+111, goto, label9
+112, label, label10
+113, scan, var41
+114, =, var55, 0
+115, =, var56, 1
+116, -, var57, var43, var56
+117, push, var41
+118, push, var42
+119, push, var44
+120, push, var43
+121, push, var44
+122, push, var43
+123, push, var55
+124, push, var57
+125, push, var41
+126, callint, var58, label1
+127, pop, var59
+128, pop, var59
+129, pop, var59
+130, pop, var59
+131, pop, var59
+132, pop, var43
+133, pop, var44
+134, pop, var42
+135, pop, var41
+136, =, var42, var58
+137, retvoid
