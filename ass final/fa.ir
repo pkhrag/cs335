@@ -1,0 +1,6 @@
+1, goto, label0
+2, label, label0
+3, scan, var1
+4, scan, var0
+5, printint, var1
+6, printint, var0

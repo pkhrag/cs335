@@ -28,7 +28,7 @@ def codeGen(x, nextUseTable):
 		elif symbol is not None:
 			addrDes[symbol]['register'] = None
 			regDes[reg] = None
-			
+
 
 	if flag:
 		genAsm.genInstr("# " + ir[end].instr)
@@ -109,7 +109,7 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 			if eax is not None:
 				genAsm.genInstr("movl %eax, " + eax)
 				addrDes[eax]['memory'] = True
-				addrDes[eax]['register'] = None 
+				addrDes[eax]['register'] = None
 
 
 			genAsm.genInstr("movl $0, %edx")
@@ -364,6 +364,11 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
                                                 genAsm.genInstr('movl %' + isRegSrc + ', %ecx')
                                                 genAsm.genInstr(instrType + " %cl, %" + locationDst)
                                                 genAsm.genInstr('popl %ecx')
+                                                addrDes[ir[lineNo].dst]['register'] = locationDst
+                                                addrDes[ir[lineNo].dst]['memory'] = False
+
+                                        elif ir[lineNo].type == 'addr':
+                                                genAsm.genInstr('lea (%' + isRegSrc + '), %' + locationDst)
                                                 addrDes[ir[lineNo].dst]['register'] = locationDst
                                                 addrDes[ir[lineNo].dst]['memory'] = False
 

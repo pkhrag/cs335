@@ -1241,7 +1241,10 @@ def p_unary_expr(p):
                 p[0].typeList[0] = p[2].typeList[0][1:]
 
             else:
-                p[0].code.append(['addr', newPlace, p[2].placelist[0]])
+                if 'AddrList' in p[0].extra:
+                    p[0].code.append(['addr', newPlace, p[0].extra['AddrList'][0]])
+                else:
+                    p[0].code.append(['addr', newPlace, p[2].placelist[0]])
                 p[0].typeList[0] = '*' + p[2].typeList[0]
 
         p[0].placelist = [newPlace]
