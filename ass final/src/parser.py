@@ -33,7 +33,7 @@ def oprnTypeCheck(a,b,op):
 
     if op == '+':
         if a == '*int_t' and b == '*int_t':
-            return True
+            return False
         if a == '*rune_t' and b == '*rune_t':
             return True
     if a.startswith('*') and b.startswith('*'):
@@ -834,7 +834,7 @@ def p_operand_name(p):
         raise NameError("Identifier " + p[1] + " not defined")
     p[0] = Node()
     info = findInfo(p[1])
-    #print info
+    # print info
 
 
     if info['type'] == 'func' or info['type'] == 'signatureType':
@@ -845,6 +845,16 @@ def p_operand_name(p):
         p[0].placelist.append(info['place'])
         p[0].extra['layerNum'] = 0
         p[0].extra['operand'] = p[1]
+        if 'sizeList' in info:
+            p[0].extra['sizeList'] = info['sizeList']
+        else:
+            for x in range(len(info['type'])):
+                if info['type'][x] != '*':
+                    break
+            if info['type'][x:] == 'rune_t':
+                p[0].extra['sizeList'] = ['inf','1']
+            elif info['type'][x:] == 'int_t':
+                p[0].extra['sizeList'] = ['inf','4']
     p[0].idList = [p[1]]
 # ---------------------------------------------------------
 
@@ -997,6 +1007,8 @@ def p_expr_list_type_opt(p):
 # ---------------------------------------------------------
 
 
+
+
 #----------------------OPERATORS-------------------------
 def p_expr(p):
     '''Expression : UnaryExpr
@@ -1034,6 +1046,120 @@ def p_expr(p):
         elif p[2] == '>>':
             p[0].code.append(["=",newPlace, p[1].placelist[0]])
             p[0].code.append([">>=",newPlace, p[3].placelist[0]])
+
+
+
+
+        # OOP Concept for operator overload 
+        elif p[2] == '+' and (p[1].typeList[0] == '*rune_t') and (p[3].typeList[0] == '*rune_t'):
+            if (p[1].extra['sizeList'][0] != 'inf') and (p[3].extra['sizeList'][0] != 'inf'):
+                # print p[1].extra
+
+                t1 = newTemp()
+                t2 = newTemp()
+                p1 = p[1].placelist[0]
+                p2 = p[3].placelist[0]
+                P1 = newTemp()
+                P2 = newTemp()
+
+                p[0].code.append(['=',P1,p1])
+                p[0].code.append(['=',P2,p2])
+
+
+                sL1 = p[1].extra['sizeList']
+                sL2 = p[3].extra['sizeList']
+                p[0].code.append(['=',t1,sL1[1]])
+                p[0].code.append(['x',t1,t1,sL1[0]])
+
+                p[0].code.append(['=',t2,sL2[1]])
+                p[0].code.append(['x',t2,t2,sL2[0]])
+
+                p[0].code.append(['+',t1,t1,t2])
+
+                # p[0].code.append(['printint', t1])
+
+                p[0].code.append(['array',newPlace,t1])
+                newP = newTemp()
+                p[0].code.append(['=',newP,newPlace])
+                gcounter = newTemp()
+                p[0].code.append(['=', gcounter, '1'])
+
+                
+                # copy p[1]
+                l1 = newLabel()
+                l2 = newLabel()
+                v1 = newTemp()
+                v2 = newTemp()
+                v3 = newTemp()
+                v4 = newTemp()
+                v5 = newTemp()
+
+                p[0].code.append(['=', v1, '0'])
+                p[0].code.append(['=', v2, sL1[0]])
+                p[0].code.append(['label',l1])
+                v3 = newTemp()
+                p[0].code.append(['<', v3, v1, v2])
+                v4 = newTemp()
+                p[0].code.append(['=', v4, 1])
+                p[0].code.append(['-', v3, v4, v3])
+                p[0].code.append(['ifgoto',v3,l2])
+
+                # p[0].code.append(['=', v4, 1])
+                # p[0].code.append(['x', v3, gcounter, v4])
+                # p[0].code.append(['+', newP, ])
+                # p[0].code.append(['printstr', newP])
+                p[0].code.append(['load', v5, P1])
+                # p[0].code.append(['printint', v5])
+                p[0].code.append(['store', newP, v5])
+
+
+                p[0].code.append(['++', v1])
+                p[0].code.append(['+', newP, newP, gcounter])
+                p[0].code.append(['+', P1, P1, gcounter])
+                # p[0].code.append(['++', gcounter])
+                p[0].code.append(['goto', l1])
+                p[0].code.append(['label', l2])
+
+
+
+
+                # copy p[2]
+                l1 = newLabel()
+                l2 = newLabel()
+                v1 = newTemp()
+                v2 = newTemp()
+                v3 = newTemp()
+                v4 = newTemp()
+                v5 = newTemp()
+
+
+                p[0].code.append(['=', v1, '0'])
+                p[0].code.append(['=', v2, sL2[0]])
+                p[0].code.append(['label',l1])
+                v3 = newTemp()
+                p[0].code.append(['<', v3, v1, v2])
+                v4 = newTemp()
+                p[0].code.append(['=', v4, 1])
+                p[0].code.append(['-', v3, v4, v3])
+                p[0].code.append(['ifgoto',v3,l2])
+
+                
+                p[0].code.append(['load', v5, P2])
+                # p[0].code.append(['printint', v5])
+
+                p[0].code.append(['store', newP, v5])
+
+
+                p[0].code.append(['++', v1])
+                p[0].code.append(['+', newP, newP, gcounter])
+                p[0].code.append(['+', P2, P2, gcounter])
+                # p[0].code.append(['++', gcounter])
+                p[0].code.append(['goto', l1])
+                p[0].code.append(['label', l2])
+
+
+            else:
+                raise TypeError("Expression1 of type: " + str(p[1].typeList[0]) + " with operator: " + str(p[2]) + " with Expression2 of type: " + str(p[3].typeList[0]))
 
 
         # p + 2 should be actually p + 8 for that
@@ -1075,7 +1201,7 @@ def p_expr(p):
         #TODO typechecking based on typeList and update type of p[0]
         checkt = oprnTypeCheck(p[1].typeList[0], p[3].typeList[0], p[2])
         if not checkt:
-            raise TypeError("Expression1 of type: " + p[1].typeList[0] + " with operator: " + p[2] + " with Expression2 of type: " + p[3].typeList)
+            raise TypeError("Expression1 of type: " + str(p[1].typeList[0]) + " with operator: " + str(p[2]) + " with Expression2 of type: " + str(p[3].typeList[0]))
 
     else:
         p[0] = p[1]
