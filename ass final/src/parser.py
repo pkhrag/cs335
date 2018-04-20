@@ -1613,10 +1613,10 @@ def p_return(p):
   '''ReturnStmt : RETURN ExpressionPureOpt'''
   p[0] = p[2]
 
-  retT = scopeDict[currScope].extra['retT'];
-  fName = scopeDict[currScope].extra['fName'];
-
-
+  #retT = scopeDict[currScope].extra['retT'];
+  retT = findLabel('retT')
+  fName = findLabel('fName')
+  #fName = scopeDict[currScope].extra['fName'];
 
   if len(p[2].placelist) != 0:
     checkt = assignTypeCheck(retT, p[2].typeList[0])
