@@ -1309,8 +1309,11 @@ def p_print_stmt(p):
 
 def p_scan_stmt(p):
     ''' ScanStmt : SCAN Expression'''
-    p[0] = Node()
+    p[0] = p[2]
+    # print p[2].extra
     p[0].code.append(['scan', p[2].placelist[0]])
+    if 'AddrList' in p[2].extra:
+        p[0].code.append(['store',p[2].extra['AddrList'][0],p[2].placelist[0]])
 
 
 
