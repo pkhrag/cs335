@@ -345,6 +345,7 @@ def p_sign(p):
     '''Signature : Parameters TypeOpt'''
     p[0] = p[1]
 
+    scopeDict[currScope].updateExtra('typeList', p[1].typeList)
 
     scopeDict[0].insert(p[-2][1],'signatureType')
     if len(p[2].typeList) == 0:
@@ -662,7 +663,6 @@ def p_var_spec(p):
 
             p[1].placelist[x] = p[3].placelist[x]
 
-            #TODO typelist check required
             scope = findScope(p[1].idList[x])
             scopeDict[scope].updateArgList(p[1].idList[x], 'place', p[1].placelist[x])
             scopeDict[scope].updateArgList(p[1].idList[x], 'type', p[2].typeList[0])
@@ -742,7 +742,6 @@ def p_func_name(p):
 
 def p_func(p):
     '''Function : Signature funMark FunctionBody'''
-    # TODO typechecking of return type. It should be same as defined in signature
     p[0] = p[3]
     for x in range(len(p[1].idList)):
         info = findInfo(p[1].idList[x])
@@ -923,14 +922,20 @@ def p_prim_expr(p):
 
 
 
+        info = findInfo(p[1].idList[0], 0)
+	funcDict = info['child']
+	paramTypeList = funcDict.extra['typeList']
         if len(p[3].placelist):
             for x in p[3].placelist:
                 p[0].code.append(['push', x])
+	    for x in range(len(p[3].placelist)):
+		if not assignTypeCheck(paramTypeList[x], p[3].typeList[x]):
+		    raise TypeError("Type mismatch in the " + p[1].idList[0] + " parameters!!")
+		
 
 
 
 
-        info = findInfo(p[1].idList[0], 0)
         if info['retType'] == 'void':
             p[0].code.append(['callvoid', info['label']])
         else:
@@ -1613,10 +1618,10 @@ def p_return(p):
   '''ReturnStmt : RETURN ExpressionPureOpt'''
   p[0] = p[2]
 
-  #retT = scopeDict[currScope].extra['retT'];
-  retT = findLabel('retT')
-  fName = findLabel('fName')
-  #fName = scopeDict[currScope].extra['fName'];
+  for scope in scopeStack[::-1]:
+    if 'fName' in scopeDict[scope].extra:
+      fName = scopeDict[scope].extra['fName']
+      retT = scopeDict[scope].extra['retT']
 
   if len(p[2].placelist) != 0:
     checkt = assignTypeCheck(retT, p[2].typeList[0])
@@ -1981,11 +1986,11 @@ def checkLabel():
 
 try:
   s = data
-  print(s)
+  #print(s)
 except EOFError:
-  print("khatam bc")
+  raise EOFError("File has ended!")
 if not s:
-  print("bas kar")
+  raise ValueError("Error, report to Dutta immediately!!")
 result = parser.parse(s)
 
 # print nonTTerminals

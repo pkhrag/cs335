@@ -176,7 +176,7 @@ def codeGeneratorPerLine(lineNo, nextUseTable):
 
 		## for compare types
 		if ir[lineNo].type == '>=':
-			genAsm.genInstr("subl $1, %" + locationDst)
+			genAsm.genInstr("addl $1, %" + locationDst)
 		elif ir[lineNo].type == '<':
 			genAsm.genInstr("addl $1, %" + locationDst)
 

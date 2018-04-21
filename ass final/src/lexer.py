@@ -5,7 +5,7 @@ import ply.lex as lex
 import re
 
 keywords = {'STRUCT', 'FUNC', 'CONST', 'TYPE', 'VAR', 'IF', 'ELSE', 'SWITCH', 'CASE', 'PRINT', 'SCAN',
-            'DEFAULT', 'FOR', 'RANGE', 'RETURN', 'BREAK', 'CONTINUE', 'GOTO', 'PACKAGE', 'IMPORT', 'INT_T', 'FLOAT_T', 'UINT_T', 'COMPLEX_T', 'RUNE_T', 'BOOL_T', 'STRING_T', 'TYPECAST'}
+            'DEFAULT', 'FOR', 'RETURN', 'BREAK', 'CONTINUE', 'GOTO', 'PACKAGE', 'IMPORT', 'INT_T', 'FLOAT_T', 'UINT_T', 'COMPLEX_T', 'RUNE_T', 'BOOL_T', 'STRING_T', 'TYPECAST'}
 
 operators = {'PLUS', 'MINUS', 'STAR', 'DIVIDE', 'MOD', 'ASSIGN', 'AND', 'LOGICAL_AND', 'INCR', 'DECR', 'LPAREN', 'RPAREN', 'OR', 'XOR', 'LSHIFT', 'RSHIFT', 'PLUS_ASSIGN', 'MINUS_ASSIGN', 'STAR_ASSIGN', 'DIVIDE_ASSIGN', 'MOD_ASSIGN', 'AND_ASSIGN', 'OR_ASSIGN', 'XOR_ASSIGN', 'LSHIFT_ASSIGN', 'RSHIFT_ASSIGN', 'LOGICAL_OR', 'EQUALS', 'LESSER', 'GREATER', 'NOT', 'NOT_ASSIGN', 'LESS_EQUALS', 'MORE_EQUALS', 'QUICK_ASSIGN', 'LSQUARE', 'RSQUARE', 'LCURL',
              'RCURL', 'COMMA', 'DOT', 'SEMICOLON', 'COLON', 'PD', 'PS'}
@@ -180,17 +180,17 @@ try:
                 continue
             Toks[tok.type].append(tok.value)
 
-        print "TOKEN\t\t\tOCCURANCES\t\tLEXEMES"
-        print "-"*64
-        for i in Toks:
-            if Toks[i][1]==0:
-                continue
-            if len(Toks[i][0]) <= 6:
-                print Toks[i][0], "\t\t\t", Toks[i][1], "\t\t\t", Toks[i][2]
-            else:
-                print Toks[i][0], "\t\t", Toks[i][1], "\t\t\t", Toks[i][2]
-            for x in range(3, len(Toks[i])):
-                print "\t\t\t\t\t\t", Toks[i][x]
+#        print "TOKEN\t\t\tOCCURANCES\t\tLEXEMES"
+#        print "-"*64
+#        for i in Toks:
+#            if Toks[i][1]==0:
+#                continue
+#            if len(Toks[i][0]) <= 6:
+#                print Toks[i][0], "\t\t\t", Toks[i][1], "\t\t\t", Toks[i][2]
+#            else:
+#                print Toks[i][0], "\t\t", Toks[i][1], "\t\t\t", Toks[i][2]
+#            for x in range(3, len(Toks[i])):
+#                print "\t\t\t\t\t\t", Toks[i][x]
 
 except IOError as e:
     print "I/O error({0}): " + "Cannot open file " + file_name + " . Does it Exists? Check permissionsi!"
